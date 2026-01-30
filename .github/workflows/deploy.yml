@@ -10,7 +10,11 @@ permiisons:
   pages: write
   id-token: write
 
+permissions:
+ contents: write 
+
 jobs:
+
  deploy:
    runs-on: ubuntu-latest
    steps:
