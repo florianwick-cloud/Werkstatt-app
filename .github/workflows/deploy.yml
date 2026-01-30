@@ -3,6 +3,12 @@ name: Deploy Vite app to GitHub Pages
 on:
  push:
    branches: [ main ]
+    workflow_dispatch:
+
+permiisons:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
  deploy:
