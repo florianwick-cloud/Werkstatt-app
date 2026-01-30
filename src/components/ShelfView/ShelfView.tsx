@@ -3,7 +3,7 @@ import type { Shelf, Box, Tool, Material } from "../../types/models";
 
 import ShelfHeader from "./ShelfHeader";
 import ShelfInfo from "./ShelfInfo";
-import ShelfTools from "./ShelfTools";
+import ShelfTools from "./ShelfTools"; // <-- WICHTIG: exakt wie Dateiname!
 import ShelfMaterials from "./ShelfMaterials";
 
 import BoxForm from "../../forms/BoxForm";
@@ -18,7 +18,6 @@ type Props = {
   boxes: Box[];
   tools: Tool[];
   materials: Material[];
-  
 
   onBack: () => void;
 
@@ -250,7 +249,7 @@ export default function ShelfView({
         shelves={shelves}
         boxes={boxes}
         onAddTool={onAddTool}
-        onEditTool={(tool) => {
+        onEditTool={(tool: Tool) => {
           setInitialTool(tool);
           setShowToolForm(true);
         }}
@@ -263,7 +262,7 @@ export default function ShelfView({
         shelves={shelves}
         boxes={boxes}
         onAddMaterial={onAddMaterial}
-        onEditMaterial={(material) => {
+        onEditMaterial={(material: Material) => {
           setInitialMaterial(material);
           setShowMaterialForm(true);
         }}
