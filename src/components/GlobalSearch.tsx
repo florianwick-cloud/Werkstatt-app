@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Shelf, Box, Tool, Material } from "../types/models";
 
@@ -13,6 +12,7 @@ type Props = {
   boxes: Box[];
   tools: Tool[];
   materials: Material[];
+  query: string; // 🔥 Wichtig: jetzt korrekt typisiert
 };
 
 export default function GlobalSearch({
@@ -20,8 +20,8 @@ export default function GlobalSearch({
   boxes,
   tools,
   materials,
+  query,
 }: Props) {
-  const [query, setQuery] = useState("");
   const navigate = useNavigate();
 
   const q = query.trim().toLowerCase();
@@ -65,42 +65,19 @@ export default function GlobalSearch({
 
   return (
     <div style={{ margin: "1rem 0" }}>
-      {/* SUCHFELD IMMER SICHTBAR */}
-      <input
-        placeholder="🔍 Alles durchsuchen…"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        style={{
-          width: "100%",
-          padding: "0.6rem",
-          borderRadius: "6px",
-          border: "1px solid #ccc",
-        }}
-      />
-
-      {/* ERGEBNISSE */}
+      {/* Ergebnisse */}
       {q && (
         <div style={{ marginTop: "0.75rem" }}>
           {results.map((r, i) => (
             <div
               key={i}
               onClick={() => {
-                if (r.type === "shelf")
-                  navigate(`/shelf/${r.shelf.id}`);
-                if (r.type === "box")
-                  navigate(`/box/${r.box.id}`);
+                if (r.type === "shelf") navigate(`/shelf/${r.shelf.id}`);
+                if (r.type === "box") navigate(`/box/${r.box.id}`);
                 if (r.type === "tool")
-                  navigate(
-                    r.box
-                      ? `/box/${r.box.id}`
-                      : `/shelf/${r.shelf.id}`
-                  );
+                  navigate(r.box ? `/box/${r.box.id}` : `/shelf/${r.shelf.id}`);
                 if (r.type === "material")
-                  navigate(
-                    r.box
-                      ? `/box/${r.box.id}`
-                      : `/shelf/${r.shelf.id}`
-                  );
+                  navigate(r.box ? `/box/${r.box.id}` : `/shelf/${r.shelf.id}`);
               }}
               style={{
                 padding: "0.6rem",
@@ -128,9 +105,7 @@ export default function GlobalSearch({
 
               <div style={{ fontSize: "0.8rem", color: "#666" }}>
                 Regal: {r.shelf.name}
-                {"box" in r && r.box
-                  ? ` → Kiste: ${r.box.name}`
-                  : ""}
+                {"box" in r && r.box ? ` → Kiste: ${r.box.name}` : ""}
               </div>
             </div>
           ))}

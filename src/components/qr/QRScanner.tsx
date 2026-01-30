@@ -10,41 +10,45 @@ export default function QRScanner({ onScan, onClose }: Props) {
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
   useEffect(() => {
-    let isMounted = true;
+    const scanner = new Html5Qrcode("qr-reader");
+    scannerRef.current = scanner;
 
-    const init = async () => {
-      // iPhone Safari braucht manchmal einen kleinen Delay
-      await new Promise((res) => setTimeout(res, 150));
+    const config = { fps: 10, qrbox: 250 };
 
-      const scanner = new Html5Qrcode("qr-reader");
-      scannerRef.current = scanner;
+    const onSuccess = (decodedText: string) => {
+      onScan(decodedText);
+      stopScanner();
+    };
 
+    const startScanner = async () => {
       try {
         await scanner.start(
-          { facingMode: "environment" },
-          { fps: 10, qrbox: 250 },
-          (decodedText) => {
-            if (!isMounted) return;
-
-            // Vibrationsfeedback (iPhone unterstützt das)
-            if (navigator.vibrate) navigator.vibrate(50);
-
-            onScan(decodedText);
-
-            // Scanner sauber stoppen
-            scanner.stop().catch(() => {});
+          { facingMode: "environment" }, // Kamera
+          config,                        // Scan-Konfiguration
+          onSuccess,                     // Erfolgs-Callback
+          (errorMessage) => {            // Fehler-Callback (Pflicht)
+            console.warn("QR scan error:", errorMessage);
           }
         );
       } catch (err) {
-        console.error("Scanner start failed", err);
+        console.error("QRScanner start failed:", err);
       }
     };
 
-    init();
+    const stopScanner = async () => {
+      try {
+        if (scannerRef.current?.isScanning) {
+          await scannerRef.current.stop();
+        }
+      } catch (err) {
+        console.error("QRScanner stop failed:", err);
+      }
+    };
+
+    startScanner();
 
     return () => {
-      isMounted = false;
-      scannerRef.current?.stop().catch(() => {});
+      stopScanner();
     };
   }, [onScan]);
 
@@ -53,47 +57,29 @@ export default function QRScanner({ onScan, onClose }: Props) {
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0,0,0,0.85)",
-        zIndex: 1000,
+        background: "rgba(0,0,0,0.8)",
         display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 9999,
         flexDirection: "column",
       }}
     >
-      <div
-        id="qr-reader"
-        style={{
-          flex: 1,
-          position: "relative",
-        }}
-      >
-        {/* Scan-Overlay */}
-        <div
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            width: 250,
-            height: 250,
-            transform: "translate(-50%, -50%)",
-            border: "2px solid rgba(255,255,255,0.6)",
-            borderRadius: "12px",
-          }}
-        />
-      </div>
+      <div id="qr-reader" style={{ width: "300px" }} />
 
       <button
         onClick={onClose}
         style={{
-          padding: "1rem",
-          background: "#ff7a00",
-          color: "white",
+          marginTop: "20px",
+          padding: "10px 20px",
+          fontSize: "16px",
+          borderRadius: "8px",
           border: "none",
-          fontSize: "1rem",
-          fontWeight: 600,
+          background: "#fff",
           cursor: "pointer",
         }}
       >
-        Abbrechen
+        Schließen
       </button>
     </div>
   );

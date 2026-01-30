@@ -39,7 +39,6 @@ export default function ShelfInfo({
             background: "#fff",
           }}
         >
-          {/* Kistenname */}
           <span
             style={{ cursor: "pointer", fontWeight: 600 }}
             onClick={() => onOpenBox(box.id)}
@@ -48,7 +47,6 @@ export default function ShelfInfo({
           </span>
 
           <div style={{ display: "flex", gap: "0.5rem" }}>
-            {/* Bearbeiten */}
             <button
               onClick={() => onEditBox(box)}
               style={{
@@ -66,7 +64,6 @@ export default function ShelfInfo({
               <Pencil size={18} strokeWidth={2} />
             </button>
 
-            {/* Löschen */}
             <button
               onClick={() => onDeleteBox(box.id)}
               style={{

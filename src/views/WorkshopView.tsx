@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Shelf, Box, Tool, Material } from "../types/models";
+import type { SearchResult } from "../utils/search";
 
 import QRScanner from "../components/qr/QRScanner";
 import GlobalSearch from "../components/GlobalSearch";
 import WorkshopHeader from "../components/WorkshopHeader";
 
-// ⭐ Lucide Icons
 import { Pencil, Trash2 } from "lucide-react";
 
 type Props = {
@@ -14,6 +14,10 @@ type Props = {
   boxes: Box[];
   tools: Tool[];
   materials: Material[];
+
+  searchQuery: string;
+  onSearchChange: (value: string) => void;
+  searchResults: SearchResult[];
 
   onAddShelf: (name: string) => void;
   onUpdateShelf: (id: string, name: string) => void;
@@ -25,14 +29,15 @@ export default function WorkshopView({
   boxes,
   tools,
   materials,
+  searchQuery,
+  onSearchChange,
+  searchResults,
   onAddShelf,
   onUpdateShelf,
   onDeleteShelf,
 }: Props) {
   const navigate = useNavigate();
   const [showScanner, setShowScanner] = useState(false);
-
-  const [searchQuery, setSearchQuery] = useState("");
 
   function handleScan(value: string) {
     setShowScanner(false);
@@ -49,18 +54,15 @@ export default function WorkshopView({
     if (name) onUpdateShelf(shelf.id, name);
   }
 
-  // 🔤 SORTIERUNG: alphabetisch + numerisch korrekt
   const sortedShelves = [...shelves].sort((a, b) =>
     a.name.localeCompare(b.name, undefined, { numeric: true })
   );
 
   return (
     <div className="flex flex-col h-full">
-
-      {/* ⭐ Header */}
       <WorkshopHeader
         searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
+        onSearchChange={onSearchChange}
         onAddShelf={handleAddShelf}
         onAddBox={() => alert("Kiste hinzufügen kommt später")}
         onAddTool={() => alert("Werkzeug hinzufügen kommt später")}
@@ -68,10 +70,7 @@ export default function WorkshopView({
         onOpenQR={() => setShowScanner(true)}
       />
 
-      {/* ⭐ Inhalt */}
       <div style={{ padding: "1rem" }}>
-        
-        {/* Globale Suche */}
         <GlobalSearch
           shelves={shelves}
           boxes={boxes}
@@ -80,7 +79,6 @@ export default function WorkshopView({
           query={searchQuery}
         />
 
-        {/* Liste der Regale */}
         {sortedShelves.map((shelf) => (
           <div
             key={shelf.id}
@@ -101,7 +99,6 @@ export default function WorkshopView({
               {shelf.name}
             </div>
 
-            {/* Bearbeiten */}
             <button
               onClick={() => handleEditShelf(shelf)}
               style={{
@@ -119,7 +116,6 @@ export default function WorkshopView({
               <Pencil size={18} strokeWidth={2} />
             </button>
 
-            {/* Löschen */}
             <button
               onClick={() => onDeleteShelf(shelf.id)}
               style={{

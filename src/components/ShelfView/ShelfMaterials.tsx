@@ -7,6 +7,7 @@ type Props = {
   shelves: Shelf[];
   boxes: Box[];
 
+  onAddMaterial: (material: Omit<Material, "id">) => void;
   onEditMaterial: (material: Material) => void;
   onDeleteMaterial: (id: string) => void;
 };
@@ -16,12 +17,37 @@ export default function ShelfMaterials({
   shelf,
   shelves,
   boxes,
+  onAddMaterial,
   onEditMaterial,
   onDeleteMaterial,
 }: Props) {
   return (
     <section style={{ marginBottom: "1rem" }}>
       <h3>Material</h3>
+
+      <button
+        onClick={() =>
+          onAddMaterial({
+            name: "",
+            shelfId: shelf.id,
+            boxId: null,
+            quantity: 1,
+            unit: "pcs",
+          })
+        }
+        style={{
+          padding: "0.4rem 0.75rem",
+          background: "#ff7a00",
+          color: "white",
+          border: "none",
+          borderRadius: "6px",
+          fontWeight: 600,
+          cursor: "pointer",
+          marginBottom: "0.75rem",
+        }}
+      >
+        Material hinzufügen
+      </button>
 
       {materials.length === 0 && (
         <p style={{ opacity: 0.6 }}>Kein Material im Regal</p>

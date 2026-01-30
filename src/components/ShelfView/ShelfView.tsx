@@ -18,6 +18,7 @@ type Props = {
   boxes: Box[];
   tools: Tool[];
   materials: Material[];
+  
 
   onBack: () => void;
 

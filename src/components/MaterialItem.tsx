@@ -1,5 +1,5 @@
 import { Pencil, Trash2 } from "lucide-react";
-import type { Material } from "../../types/models";
+import type { Material } from "../types/models";
 
 type Props = {
   material: Material;

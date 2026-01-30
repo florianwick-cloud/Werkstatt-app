@@ -75,9 +75,10 @@ export default function ToolItem({
         alignItems: "flex-start",
       }}
     >
-      {tool.image && (
+      {/* ⭐ Bildanzeige korrigiert: imageUrl statt image */}
+      {tool.imageUrl && (
         <img
-          src={tool.image}
+          src={tool.imageUrl}
           alt={tool.name}
           style={{
             width: "48px",

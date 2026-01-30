@@ -31,31 +31,33 @@ export default function BoxRoute({
   const navigate = useNavigate();
   const { boxId } = useParams<{ boxId: string }>();
 
-  // Warten, bis Daten aus IndexedDB geladen sind
-if (!boxes.length || !shelves.length) {
-  return <div style={{ padding: "1rem" }}>Lade Daten…</div>;
-}
+  // Warten auf Daten
+  if (!boxes.length || !shelves.length) {
+    return <div style={{ padding: "1rem" }}>Lade Daten…</div>;
+  }
 
-const box = boxes.find((b) => b.id === boxId);
-if (!box) {
-  return <div style={{ padding: "1rem" }}>Kiste nicht gefunden</div>;
-}
+  // Box suchen
+  const box = boxes.find((b) => b.id === boxId);
+  if (!box) {
+    return <div style={{ padding: "1rem" }}>Kiste nicht gefunden</div>;
+  }
 
-const shelf = shelves.find((s) => s.id === box.shelfId);
-if (!shelf) {
-  return <div style={{ padding: "1rem" }}>Regal nicht gefunden</div>;
-}
+  // Shelf suchen
+  const shelf = shelves.find((s) => s.id === box.shelfId);
+  if (!shelf) {
+    return <div style={{ padding: "1rem" }}>Regal nicht gefunden</div>;
+  }
 
+  // Ab hier sind box & shelf garantiert definiert
+  const safeBox = box;
+  const safeShelf = shelf;
 
-  /* -------------------------
-     WERKZEUGE
-  ------------------------- */
   async function onAddTool(tool: Omit<Tool, "id">) {
     const newTool: Tool = {
       id: crypto.randomUUID(),
       ...tool,
-      shelfId: box.shelfId,
-      boxId: box.id,
+      shelfId: safeBox.shelfId,
+      boxId: safeBox.id,
     };
 
     await dbAdd("tools", newTool);
@@ -66,19 +68,18 @@ if (!shelf) {
     await dbDelete("tools", id);
     setTools((prev) => prev.filter((t) => t.id !== id));
   }
-async function onEditTool(tool: Tool) {
-  await dbPut("tools", tool);
-  setTools(prev => prev.map(t => t.id === tool.id ? tool : t));
-}
-  /* -------------------------
-     MATERIAL
-  ------------------------- */
+
+  async function onEditTool(tool: Tool) {
+    await dbPut("tools", tool);
+    setTools((prev) => prev.map((t) => (t.id === tool.id ? tool : t)));
+  }
+
   async function onAddMaterial(material: Omit<Material, "id">) {
     const newMaterial: Material = {
       id: crypto.randomUUID(),
       ...material,
-      shelfId: shelf.id,
-      boxId: box.id,
+      shelfId: safeShelf.id,
+      boxId: safeBox.id,
     };
 
     await dbAdd("materials", newMaterial);
@@ -91,23 +92,26 @@ async function onEditTool(tool: Tool) {
   }
 
   async function onEditMaterial(material: Material) {
-  await dbPut("materials", material);
-  setMaterials(prev => prev.map(m => m.id === material.id ? material : m));
-}
+    await dbPut("materials", material);
+    setMaterials((prev) =>
+      prev.map((m) => (m.id === material.id ? material : m))
+    );
+  }
+
   return (
     <BoxView
-      shelf={shelf}
-      box={box}
+      shelf={safeShelf}
+      box={safeBox}
       boxes={boxes}
       shelves={shelves}
-      tools={tools.filter((t) => t.boxId === box.id)}
-      materials={materials.filter((m) => m.boxId === box.id)}
-      onBack={() => navigate(`/shelf/${box.shelfId}`)}
+      tools={tools.filter((t) => t.boxId === safeBox.id)}
+      materials={materials.filter((m) => m.boxId === safeBox.id)}
+      onBack={() => navigate(`/shelf/${safeBox.shelfId}`)}
       onAddTool={onAddTool}
-      onEditTool={onEditTool} 
+      onEditTool={onEditTool}
       onDeleteTool={onDeleteTool}
       onAddMaterial={onAddMaterial}
-      onEditMaterial={onEditMaterial} 
+      onEditMaterial={onEditMaterial}
       onDeleteMaterial={onDeleteMaterial}
     />
   );

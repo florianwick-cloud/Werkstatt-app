@@ -37,7 +37,7 @@ export default function QRLabel({
     const dataUrl = canvas.toDataURL("image/png");
 
     // iPhone Share Sheet
-    if (navigator.canShare && navigator.share) {
+    if (navigator.share) {
       const blob = await (await fetch(dataUrl)).blob();
       const file = new File([blob], `${boxName}.png`, { type: "image/png" });
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
-import type { Shelf, Box, Tool } from "../../types/models";
+import type { Tool, Shelf, Box } from "../../types/models";
 
 type Props = {
   tools: Tool[];
@@ -8,6 +8,7 @@ type Props = {
   shelves: Shelf[];
   boxes: Box[];
 
+  onAddTool: (tool: Omit<Tool, "id">) => void;
   onEditTool: (tool: Tool) => void;
   onDeleteTool: (id: string) => void;
 };
@@ -17,6 +18,7 @@ export default function ShelfTools({
   shelf,
   shelves,
   boxes,
+  onAddTool,
   onEditTool,
   onDeleteTool,
 }: Props) {
@@ -45,7 +47,6 @@ export default function ShelfTools({
             background: "#fff",
           }}
         >
-          {/* Thumbnail */}
           <img
             src={tool.imageUrl ?? "/placeholder.png"}
             alt={tool.name}
@@ -59,10 +60,8 @@ export default function ShelfTools({
             }}
           />
 
-          {/* Werkzeugname */}
           <span style={{ fontWeight: 600, flex: 1 }}>{tool.name}</span>
 
-          {/* Aktionen */}
           <div style={{ display: "flex", gap: "0.5rem" }}>
             <button
               onClick={() => onEditTool(tool)}
@@ -101,7 +100,6 @@ export default function ShelfTools({
         </div>
       ))}
 
-      {/* Modal */}
       {selectedImage && (
         <div
           onClick={() => setSelectedImage(null)}
@@ -116,7 +114,6 @@ export default function ShelfTools({
             zIndex: 9999,
           }}
         >
-          {/* X-Icon */}
           <button
             onClick={(e) => {
               e.stopPropagation();

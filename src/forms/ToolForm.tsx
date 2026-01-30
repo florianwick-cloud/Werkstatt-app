@@ -33,12 +33,11 @@ export default function ToolForm({
     initialTool?.boxId ?? null
   );
 
-  // ⭐ NEU: Bild-URL
+  // ⭐ Bild-URL
   const [imageUrl, setImageUrl] = useState<string | null>(
     initialTool?.imageUrl ?? null
   );
 
-  // ⭐ NEU: Upload-Handler
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -47,17 +46,14 @@ export default function ToolForm({
     setImageUrl(url);
   }
 
-  // Kisten des gewählten Regals
   const shelfBoxes = boxes.filter((b) => b.shelfId === selectedShelfId);
 
-  // Wenn nur ein Regal existiert → automatisch auswählen
   useEffect(() => {
     if (!selectedShelfId && shelves.length === 1) {
       setSelectedShelfId(shelves[0].id);
     }
   }, [shelves, selectedShelfId]);
 
-  // Box zurücksetzen wenn Ort = Regal
   useEffect(() => {
     if (location === "shelf") {
       setSelectedBoxId(null);
@@ -79,7 +75,9 @@ export default function ToolForm({
       description: description.trim(),
       shelfId: selectedShelfId,
       boxId: location === "box" ? selectedBoxId : null,
-      imageUrl, // ⭐ NEU: Bild speichern
+
+      // ⭐ FIX: null → undefined
+      imageUrl: imageUrl ?? undefined,
     });
   }
 
@@ -182,7 +180,7 @@ export default function ToolForm({
         }}
       />
 
-      {/* ⭐ NEU: BILD-UPLOADER */}
+      {/* BILD-UPLOADER */}
       <div style={{ marginBottom: "0.75rem" }}>
         <label
           style={{
