@@ -10,8 +10,6 @@ permiisons:
   pages: write
   id-token: write
 
-permissions:
- contents: write 
 
 jobs:
 
