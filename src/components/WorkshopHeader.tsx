@@ -23,7 +23,7 @@ export default function WorkshopHeader({
   onOpenQR,
 }: Props) {
   return (
-    <header className="sticky top-0 z-20 flex-shrink-0 bg-white/80 backdrop-blur-md border-b border-gray-200">
+    <header className="sticky top-0 z-20 bg-orange-500 text-white shadow-md">
       <div className="relative flex items-center justify-between px-4 py-2">
 
         {/* LINKS: AddMenu */}
@@ -37,7 +37,7 @@ export default function WorkshopHeader({
         />
 
         {/* MITTE: Titel */}
-        <h1 className="absolute left-1/2 -translate-x-1/2 text-xl font-semibold text-gray-800 pointer-events-none">
+        <h1 className="absolute left-1/2 -translate-x-1/2 text-xl font-semibold pointer-events-none">
           Werkstatt
         </h1>
 
@@ -49,15 +49,15 @@ export default function WorkshopHeader({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Suchen…"
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
+            className="px-3 py-2 border border-white/40 bg-white/20 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-white/60 placeholder-white/70"
           />
 
           {/* QR Button */}
           <button
             onClick={onOpenQR}
-            className="w-12 h-12 flex items-center justify-center text-gray-700 hover:bg-gray-100 rounded-lg transition"
+            className="w-10 h-10 flex items-center justify-center hover:bg-white/20 rounded-lg transition"
           >
-            <QrCode className="w-8 h-8 stroke-[1.5]" />
+            <QrCode className="w-6 h-6 stroke-[1.5]" />
           </button>
         </div>
       </div>

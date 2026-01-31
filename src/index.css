@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 :root {
   --orange: #f97316;
   --orange-light: #fed7aa;
@@ -15,8 +17,6 @@ body {
   background: var(--bg);
   color: var(--text);
 }
-
-
 
 button {
   background: var(--orange);

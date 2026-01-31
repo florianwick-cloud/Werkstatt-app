@@ -1,49 +1,42 @@
 import AddMenu from "../AddMenu/AddMenu";
-import type { Box } from "../../types/models";
+import type { Box, Shelf } from "../../types/models";
 
 export default function BoxHeader({
   box,
+  shelf,
   onBack,
-  onAddTool,
   onAddMaterial,
+  onAddTool,
 }: {
-  box: Box | undefined;
+  box: Box;
+  shelf: Shelf;
   onBack: () => void;
-  onAddTool: () => void;
   onAddMaterial: () => void;
+  onAddTool: () => void;
 }) {
-
-  if (!box) {
-    return (
-      <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-200 px-4 py-3">
-        <div className="text-gray-500">Lade Kiste…</div>
-      </header>
-    );
-  }
-
   return (
-    <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-200">
+    <header className="sticky top-0 z-20 bg-orange-500 text-white shadow-md">
       <div className="relative flex items-center justify-between px-4 py-2">
 
         {/* PLUS LINKS */}
         <AddMenu
           context="box"
-          onAddTool={onAddTool}
           onAddMaterial={onAddMaterial}
+          onAddTool={onAddTool}
           className="text-4xl"
         />
 
         {/* TITEL ZENTRIERT */}
-        <h2 className="absolute left-1/2 -translate-x-1/2 text-xl font-semibold text-gray-800">
+        <h2 className="absolute left-1/2 -translate-x-1/2 text-xl font-semibold pointer-events-none">
           {box.name}
         </h2>
 
-        {/* ZURÜCK RECHTS — GLEICHE GRÖSSE WIE PLUS */}
+        {/* ZURÜCK RECHTS */}
         <button
           onClick={onBack}
-          className="p-3 text-gray-700 hover:bg-gray-100 rounded-lg"
+          className="w-10 h-10 flex items-center justify-center hover:bg-white/20 rounded-lg transition"
         >
-          <span style={{ fontSize: "2.4rem", lineHeight: "1" }}>←</span>
+          <span style={{ fontSize: "2.2rem", lineHeight: "1" }}>←</span>
         </button>
       </div>
     </header>

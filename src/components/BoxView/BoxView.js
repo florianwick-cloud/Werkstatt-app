@@ -27,7 +27,7 @@ export default function BoxView({ shelf, box, shelves, boxes, tools, materials, 
         setInitialMaterial(null);
         setShowMaterialForm(true);
     }
-    return (_jsxs("div", { style: { padding: "1rem" }, children: [_jsx(BoxHeader, { box: box, onBack: onBack, onAddTool: handleAddTool, onAddMaterial: handleAddMaterial }), _jsx("div", { style: { marginBottom: "1rem" }, children: _jsx("button", { onClick: () => setShowQR(true), style: {
+    return (_jsxs("div", { style: { padding: "1rem" }, children: [_jsx(BoxHeader, { box: box, shelf: shelf, onBack: onBack, onAddTool: handleAddTool, onAddMaterial: handleAddMaterial }), _jsx("div", { style: { marginBottom: "1rem" }, children: _jsx("button", { onClick: () => setShowQR(true), style: {
                         padding: "0.5rem 0.75rem",
                         background: "#ff7a00",
                         color: "white",

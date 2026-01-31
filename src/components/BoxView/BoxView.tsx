@@ -78,6 +78,7 @@ export default function BoxView({
       {/* HEADER */}
       <BoxHeader
         box={box}
+        shelf={shelf} 
         onBack={onBack}
         onAddTool={handleAddTool}
         onAddMaterial={handleAddMaterial}
