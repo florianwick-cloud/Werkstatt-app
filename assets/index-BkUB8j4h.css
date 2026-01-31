@@ -1,0 +1,1 @@
+:root{--orange: #f97316;--orange-light: #fed7aa;--bg: #fff7ed;--text: #1f2937}*{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif;background:var(--bg);color:var(--text)}button{background:var(--orange);color:#fff;border:none;padding:.6rem 1rem;border-radius:6px;cursor:pointer}button.secondary{background:var(--orange-light);color:var(--text)}
