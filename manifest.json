@@ -1,21 +1,21 @@
-{
+{{
   "name": "Werkstatt Manager",
   "short_name": "Werkstatt",
   "description": "Verwalte Regale, Kisten, Werkzeuge und Materialien – inklusive QR-Scanner.",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "/werkstatt-app/",
+  "scope": "/werkstatt-app/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "icons": [
     {
-      "src": "/icons/icon-192.png",
+      "src": "/werkstatt-app/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "/werkstatt-app/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
