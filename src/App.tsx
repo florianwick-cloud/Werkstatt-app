@@ -114,6 +114,9 @@ export default function App() {
 
   return (
     <Routes>
+      {/* =========================
+          WORKSHOP ROOT
+         ========================= */}
       <Route
         path="/"
         element={
@@ -125,11 +128,52 @@ export default function App() {
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             searchResults={searchResults}
+
+            /* ➕ REGAL */
             onAddShelf={async (name) => {
-              const shelf = { id: crypto.randomUUID(), name };
+              const shelf: Shelf = { id: crypto.randomUUID(), name };
               await dbAdd("shelves", shelf);
               setShelves((p) => [...p, shelf]);
             }}
+
+            /* ➕ KISTE (mit Default shelfId) */
+            onAddBox={async (name) => {
+              const box: Box = {
+                id: crypto.randomUUID(),
+                name,
+                shelfId: "", // Default, weil wir im Root sind
+              };
+              await dbAdd("boxes", box);
+              setBoxes((p) => [...p, box]);
+            }}
+
+            /* ➕ WERKZEUG (mit Default shelfId + boxId) */
+            onAddTool={async (name) => {
+              const tool: Tool = {
+                id: crypto.randomUUID(),
+                name,
+                shelfId: "",
+                boxId: "",
+              };
+              await dbAdd("tools", tool);
+              setTools((p) => [...p, tool]);
+            }}
+
+            /* ➕ MATERIAL (mit Default quantity, unit, shelfId, boxId) */
+            onAddMaterial={async (name) => {
+              const material: Material = {
+                id: crypto.randomUUID(),
+                name,
+                quantity: 0,
+                unit: "",
+                shelfId: "",
+                boxId: "",
+              };
+              await dbAdd("materials", material);
+              setMaterials((p) => [...p, material]);
+            }}
+
+            /* ✏️ REGAL UPDATE */
             onUpdateShelf={async (id, name) => {
               setShelves((prev) =>
                 prev.map((s) => {
@@ -140,6 +184,8 @@ export default function App() {
                 })
               );
             }}
+
+            /* 🗑 REGAL DELETE */
             onDeleteShelf={async (id) => {
               await dbDelete("shelves", id);
               setShelves((p) => p.filter((s) => s.id !== id));
@@ -148,6 +194,9 @@ export default function App() {
         }
       />
 
+      {/* =========================
+          SHELF ROUTE
+         ========================= */}
       <Route
         path="/shelf/:shelfId"
         element={
@@ -166,6 +215,9 @@ export default function App() {
         }
       />
 
+      {/* =========================
+          BOX ROUTE
+         ========================= */}
       <Route
         path="/box/:boxId"
         element={

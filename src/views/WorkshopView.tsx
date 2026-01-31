@@ -20,9 +20,15 @@ type Props = {
   searchResults: SearchResult[];
 
   onAddShelf: (name: string) => void;
+  onAddBox: (name: string) => void;
+  onAddTool: (name: string) => void;
+  onAddMaterial: (name: string) => void;
+
   onUpdateShelf: (id: string, name: string) => void;
   onDeleteShelf: (id: string) => void;
 };
+
+
 
 export default function WorkshopView({
   shelves,
@@ -33,9 +39,13 @@ export default function WorkshopView({
   onSearchChange,
   searchResults,
   onAddShelf,
+  onAddBox,
+  onAddTool,
+  onAddMaterial,
   onUpdateShelf,
   onDeleteShelf,
 }: Props) {
+
   const navigate = useNavigate();
   const [showScanner, setShowScanner] = useState(false);
 
@@ -44,11 +54,34 @@ export default function WorkshopView({
     navigate(`/shelf/${value}`);
   }
 
+  // -----------------------------
+  // ADD-FUNKTIONEN
+  // -----------------------------
   function handleAddShelf() {
     const name = prompt("Name des Regals:");
     if (name) onAddShelf(name);
   }
 
+  function handleAddBox() {
+  const name = prompt("Name der Kiste:");
+  if (name) onAddBox(name);
+}
+
+function handleAddTool() {
+  const name = prompt("Name des Werkzeugs:");
+  if (name) onAddTool(name);
+}
+
+function handleAddMaterial() {
+  const name = prompt("Name des Materials:");
+  if (name) onAddMaterial(name);
+}
+
+
+
+  // -----------------------------
+  // EDIT-FUNKTION
+  // -----------------------------
   function handleEditShelf(shelf: Shelf) {
     const name = prompt("Regal umbenennen:", shelf.name);
     if (name) onUpdateShelf(shelf.id, name);
@@ -64,9 +97,9 @@ export default function WorkshopView({
         searchQuery={searchQuery}
         onSearchChange={onSearchChange}
         onAddShelf={handleAddShelf}
-        onAddBox={() => alert("Kiste hinzufügen kommt später")}
-        onAddTool={() => alert("Werkzeug hinzufügen kommt später")}
-        onAddMaterial={() => alert("Material hinzufügen kommt später")}
+        onAddBox={handleAddBox}
+        onAddTool={handleAddTool}
+        onAddMaterial={handleAddMaterial}
         onOpenQR={() => setShowScanner(true)}
       />
 

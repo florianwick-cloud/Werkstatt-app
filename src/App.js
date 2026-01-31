@@ -74,11 +74,49 @@ export default function App() {
     /* ⛔️ WICHTIG: Keine Routen bevor Daten geladen sind */
     if (!isLoaded)
         return null;
-    return (_jsxs(Routes, { children: [_jsx(Route, { path: "/", element: _jsx(WorkshopView, { shelves: shelves, boxes: boxes, tools: tools, materials: materials, searchQuery: searchQuery, onSearchChange: setSearchQuery, searchResults: searchResults, onAddShelf: async (name) => {
+    return (_jsxs(Routes, { children: [_jsx(Route, { path: "/", element: _jsx(WorkshopView, { shelves: shelves, boxes: boxes, tools: tools, materials: materials, searchQuery: searchQuery, onSearchChange: setSearchQuery, searchResults: searchResults, 
+                    /* ➕ REGAL */
+                    onAddShelf: async (name) => {
                         const shelf = { id: crypto.randomUUID(), name };
                         await dbAdd("shelves", shelf);
                         setShelves((p) => [...p, shelf]);
-                    }, onUpdateShelf: async (id, name) => {
+                    }, 
+                    /* ➕ KISTE (mit Default shelfId) */
+                    onAddBox: async (name) => {
+                        const box = {
+                            id: crypto.randomUUID(),
+                            name,
+                            shelfId: "", // Default, weil wir im Root sind
+                        };
+                        await dbAdd("boxes", box);
+                        setBoxes((p) => [...p, box]);
+                    }, 
+                    /* ➕ WERKZEUG (mit Default shelfId + boxId) */
+                    onAddTool: async (name) => {
+                        const tool = {
+                            id: crypto.randomUUID(),
+                            name,
+                            shelfId: "",
+                            boxId: "",
+                        };
+                        await dbAdd("tools", tool);
+                        setTools((p) => [...p, tool]);
+                    }, 
+                    /* ➕ MATERIAL (mit Default quantity, unit, shelfId, boxId) */
+                    onAddMaterial: async (name) => {
+                        const material = {
+                            id: crypto.randomUUID(),
+                            name,
+                            quantity: 0,
+                            unit: "",
+                            shelfId: "",
+                            boxId: "",
+                        };
+                        await dbAdd("materials", material);
+                        setMaterials((p) => [...p, material]);
+                    }, 
+                    /* ✏️ REGAL UPDATE */
+                    onUpdateShelf: async (id, name) => {
                         setShelves((prev) => prev.map((s) => {
                             if (s.id !== id)
                                 return s;
@@ -86,7 +124,9 @@ export default function App() {
                             dbPut("shelves", updated);
                             return updated;
                         }));
-                    }, onDeleteShelf: async (id) => {
+                    }, 
+                    /* 🗑 REGAL DELETE */
+                    onDeleteShelf: async (id) => {
                         await dbDelete("shelves", id);
                         setShelves((p) => p.filter((s) => s.id !== id));
                     } }) }), _jsx(Route, { path: "/shelf/:shelfId", element: _jsx(ShelfRoute, { shelves: shelves, boxes: boxes, tools: tools, materials: materials, setBoxes: setBoxes, setTools: setTools, setMaterials: setMaterials, dbAdd: dbAdd, dbPut: dbPut, dbDelete: dbDelete }) }), _jsx(Route, { path: "/box/:boxId", element: _jsx(BoxRoute, { boxes: boxes, tools: tools, shelves: shelves, materials: materials, setTools: setTools, setMaterials: setMaterials, dbAdd: dbAdd, dbPut: dbPut, dbDelete: dbDelete }) })] }));

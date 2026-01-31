@@ -5,25 +5,46 @@ import QRScanner from "../components/qr/QRScanner";
 import GlobalSearch from "../components/GlobalSearch";
 import WorkshopHeader from "../components/WorkshopHeader";
 import { Pencil, Trash2 } from "lucide-react";
-export default function WorkshopView({ shelves, boxes, tools, materials, searchQuery, onSearchChange, searchResults, onAddShelf, onUpdateShelf, onDeleteShelf, }) {
+export default function WorkshopView({ shelves, boxes, tools, materials, searchQuery, onSearchChange, searchResults, onAddShelf, onAddBox, onAddTool, onAddMaterial, onUpdateShelf, onDeleteShelf, }) {
     const navigate = useNavigate();
     const [showScanner, setShowScanner] = useState(false);
     function handleScan(value) {
         setShowScanner(false);
         navigate(`/shelf/${value}`);
     }
+    // -----------------------------
+    // ADD-FUNKTIONEN
+    // -----------------------------
     function handleAddShelf() {
         const name = prompt("Name des Regals:");
         if (name)
             onAddShelf(name);
     }
+    function handleAddBox() {
+        const name = prompt("Name der Kiste:");
+        if (name)
+            onAddBox(name);
+    }
+    function handleAddTool() {
+        const name = prompt("Name des Werkzeugs:");
+        if (name)
+            onAddTool(name);
+    }
+    function handleAddMaterial() {
+        const name = prompt("Name des Materials:");
+        if (name)
+            onAddMaterial(name);
+    }
+    // -----------------------------
+    // EDIT-FUNKTION
+    // -----------------------------
     function handleEditShelf(shelf) {
         const name = prompt("Regal umbenennen:", shelf.name);
         if (name)
             onUpdateShelf(shelf.id, name);
     }
     const sortedShelves = [...shelves].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
-    return (_jsxs("div", { className: "flex flex-col h-full", children: [_jsx(WorkshopHeader, { searchQuery: searchQuery, onSearchChange: onSearchChange, onAddShelf: handleAddShelf, onAddBox: () => alert("Kiste hinzufügen kommt später"), onAddTool: () => alert("Werkzeug hinzufügen kommt später"), onAddMaterial: () => alert("Material hinzufügen kommt später"), onOpenQR: () => setShowScanner(true) }), _jsxs("div", { style: { padding: "1rem" }, children: [_jsx(GlobalSearch, { shelves: shelves, boxes: boxes, tools: tools, materials: materials, query: searchQuery }), sortedShelves.map((shelf) => (_jsxs("div", { style: {
+    return (_jsxs("div", { className: "flex flex-col h-full", children: [_jsx(WorkshopHeader, { searchQuery: searchQuery, onSearchChange: onSearchChange, onAddShelf: handleAddShelf, onAddBox: handleAddBox, onAddTool: handleAddTool, onAddMaterial: handleAddMaterial, onOpenQR: () => setShowScanner(true) }), _jsxs("div", { style: { padding: "1rem" }, children: [_jsx(GlobalSearch, { shelves: shelves, boxes: boxes, tools: tools, materials: materials, query: searchQuery }), sortedShelves.map((shelf) => (_jsxs("div", { style: {
                             display: "flex",
                             alignItems: "center",
                             padding: "0.75rem",
