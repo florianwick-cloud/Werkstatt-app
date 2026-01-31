@@ -106,7 +106,7 @@ export default function ShelfView({ shelf, shelves, boxes, tools, materials, onB
                     setInitialBox(box);
                     setShowBoxForm(true);
                 }, onOpenBox: (boxId) => {
-                    window.location.href = `/box/${boxId}`;
+                    window.location.href = `#/box/${boxId}`;
                 } }), _jsx(ShelfTools, { tools: shelfTools, shelf: shelf, shelves: shelves, boxes: boxes, onAddTool: onAddTool, onEditTool: (tool) => {
                     setInitialTool(tool);
                     setShowToolForm(true);
