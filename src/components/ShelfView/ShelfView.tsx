@@ -239,8 +239,9 @@ export default function ShelfView({
           setShowBoxForm(true);
         }}
         onOpenBox={(boxId) => {
-          window.location.href = `/box/${boxId}`;
-        }}
+  window.location.href = `#/box/${boxId}`;
+      }}
+
       />
 
       <ShelfTools
