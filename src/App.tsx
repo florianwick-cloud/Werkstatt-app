@@ -1,11 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  useNavigate,
-  useParams,
-} from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 /* 🔍 Global Search */
 import { searchAll } from "./utils/search";
@@ -17,8 +11,7 @@ import { openDB } from "./storage/db";
 import WorkshopView from "./views/WorkshopView";
 import ShelfRoute from "./routes/ShelfRoute";
 import BoxRoute from "./routes/BoxRoute";
-import BoxView from "./components/BoxView/BoxView";
-import { getAllBoxes } from "./storage/boxes.storage";
+
 import type { Shelf, Box, Tool, Material } from "./types/models";
 import type { DbAdd, DbPut, DbDelete } from "./types/db";
 
@@ -33,9 +26,9 @@ type BaseRouteProps = {
   dbDelete: DbDelete;
 };
 
-
 type BoxRouteProps = BaseRouteProps;
 type ShelfRouteProps = BaseRouteProps;
+
 /* =========================
    APP ROOT
    ========================= */
@@ -120,77 +113,75 @@ export default function App() {
   if (!isLoaded) return null;
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <WorkshopView
-              shelves={shelves}
-              boxes={boxes}
-              tools={tools}
-              materials={materials}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              searchResults={searchResults}
-              onAddShelf={async (name) => {
-                const shelf = { id: crypto.randomUUID(), name };
-                await dbAdd("shelves", shelf);
-                setShelves((p) => [...p, shelf]);
-              }}
-              onUpdateShelf={async (id, name) => {
-                setShelves((prev) =>
-                  prev.map((s) => {
-                    if (s.id !== id) return s;
-                    const updated = { ...s, name };
-                    dbPut("shelves", updated);
-                    return updated;
-                  })
-                );
-              }}
-              onDeleteShelf={async (id) => {
-                await dbDelete("shelves", id);
-                setShelves((p) => p.filter((s) => s.id !== id));
-              }}
-            />
-          }
-        />
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <WorkshopView
+            shelves={shelves}
+            boxes={boxes}
+            tools={tools}
+            materials={materials}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            searchResults={searchResults}
+            onAddShelf={async (name) => {
+              const shelf = { id: crypto.randomUUID(), name };
+              await dbAdd("shelves", shelf);
+              setShelves((p) => [...p, shelf]);
+            }}
+            onUpdateShelf={async (id, name) => {
+              setShelves((prev) =>
+                prev.map((s) => {
+                  if (s.id !== id) return s;
+                  const updated = { ...s, name };
+                  dbPut("shelves", updated);
+                  return updated;
+                })
+              );
+            }}
+            onDeleteShelf={async (id) => {
+              await dbDelete("shelves", id);
+              setShelves((p) => p.filter((s) => s.id !== id));
+            }}
+          />
+        }
+      />
 
-        <Route
-          path="/shelf/:shelfId"
-          element={
-            <ShelfRoute
-              shelves={shelves}
-              boxes={boxes}
-              tools={tools}
-              materials={materials}
-              setBoxes={setBoxes}
-              setTools={setTools}
-              setMaterials={setMaterials}
-              dbAdd={dbAdd}
-              dbPut={dbPut}
-              dbDelete={dbDelete}
-            />
-          }
-        />
+      <Route
+        path="/shelf/:shelfId"
+        element={
+          <ShelfRoute
+            shelves={shelves}
+            boxes={boxes}
+            tools={tools}
+            materials={materials}
+            setBoxes={setBoxes}
+            setTools={setTools}
+            setMaterials={setMaterials}
+            dbAdd={dbAdd}
+            dbPut={dbPut}
+            dbDelete={dbDelete}
+          />
+        }
+      />
 
-        <Route
-          path="/box/:boxId"
-          element={
-            <BoxRoute
-              boxes={boxes}
-              tools={tools}
-              shelves={shelves}
-              materials={materials}
-              setTools={setTools}
-              setMaterials={setMaterials}
-              dbAdd={dbAdd}
-              dbPut={dbPut}
-              dbDelete={dbDelete}
-            />
-          }
-        />
-      </Routes>
-    </BrowserRouter>
+      <Route
+        path="/box/:boxId"
+        element={
+          <BoxRoute
+            boxes={boxes}
+            tools={tools}
+            shelves={shelves}
+            materials={materials}
+            setTools={setTools}
+            setMaterials={setMaterials}
+            dbAdd={dbAdd}
+            dbPut={dbPut}
+            dbDelete={dbDelete}
+          />
+        }
+      />
+    </Routes>
   );
 }
