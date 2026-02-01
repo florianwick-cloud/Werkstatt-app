@@ -7,7 +7,7 @@ import QRScanner from "../components/qr/QRScanner";
 import GlobalSearch from "../components/GlobalSearch";
 import WorkshopHeader from "../components/WorkshopHeader";
 
-import { Pencil, Trash2 } from "lucide-react";
+import { QrCode, Pencil, Trash2 } from "lucide-react";
 
 type Props = {
   shelves: Shelf[];
@@ -27,8 +27,6 @@ type Props = {
   onUpdateShelf: (id: string, name: string) => void;
   onDeleteShelf: (id: string) => void;
 };
-
-
 
 export default function WorkshopView({
   shelves,
@@ -54,34 +52,26 @@ export default function WorkshopView({
     navigate(`/shelf/${value}`);
   }
 
-  // -----------------------------
-  // ADD-FUNKTIONEN
-  // -----------------------------
   function handleAddShelf() {
     const name = prompt("Name des Regals:");
     if (name) onAddShelf(name);
   }
 
   function handleAddBox() {
-  const name = prompt("Name der Kiste:");
-  if (name) onAddBox(name);
-}
+    const name = prompt("Name der Kiste:");
+    if (name) onAddBox(name);
+  }
 
-function handleAddTool() {
-  const name = prompt("Name des Werkzeugs:");
-  if (name) onAddTool(name);
-}
+  function handleAddTool() {
+    const name = prompt("Name des Werkzeugs:");
+    if (name) onAddTool(name);
+  }
 
-function handleAddMaterial() {
-  const name = prompt("Name des Materials:");
-  if (name) onAddMaterial(name);
-}
+  function handleAddMaterial() {
+    const name = prompt("Name des Materials:");
+    if (name) onAddMaterial(name);
+  }
 
-
-
-  // -----------------------------
-  // EDIT-FUNKTION
-  // -----------------------------
   function handleEditShelf(shelf: Shelf) {
     const name = prompt("Regal umbenennen:", shelf.name);
     if (name) onUpdateShelf(shelf.id, name);
@@ -93,17 +83,35 @@ function handleAddMaterial() {
 
   return (
     <div className="flex flex-col h-full">
+
+      {/* HEADER */}
       <WorkshopHeader
-        searchQuery={searchQuery}
-        onSearchChange={onSearchChange}
         onAddShelf={handleAddShelf}
         onAddBox={handleAddBox}
         onAddTool={handleAddTool}
         onAddMaterial={handleAddMaterial}
-        onOpenQR={() => setShowScanner(true)}
       />
 
-      <div style={{ padding: "1rem" }}>
+      {/* SUCHFELD + QR UNTER DEM HEADER */}
+      <div className="flex items-center gap-2 px-4 py-3 bg-orange-50 border-b border-orange-200">
+        <input
+          value={searchQuery}
+          onChange={(e) => onSearchChange(e.target.value)}
+          placeholder="Suchen…"
+          className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+        />
+
+        <button
+          onClick={() => setShowScanner(true)}
+          className="w-10 h-10 flex items-center justify-center bg-orange-500 text-white rounded-md hover:bg-orange-600 transition"
+        >
+          <QrCode className="w-6 h-6" />
+        </button>
+      </div>
+
+      {/* INHALT */}
+      <div className="p-4">
+
         <GlobalSearch
           shelves={shelves}
           boxes={boxes}
@@ -115,54 +123,31 @@ function handleAddMaterial() {
         {sortedShelves.map((shelf) => (
           <div
             key={shelf.id}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              padding: "0.75rem",
-              border: "1px solid #ddd",
-              borderRadius: "8px",
-              marginBottom: "0.5rem",
-              background: "#fff",
-            }}
+            onClick={() => navigate(`/shelf/${shelf.id}`)}
+            className="flex items-center p-3 border border-gray-300 rounded-lg mb-2 bg-white cursor-pointer hover:bg-gray-50 transition"
           >
-            <div
-              style={{ flex: 1, fontWeight: 600, cursor: "pointer" }}
-              onClick={() => navigate(`/shelf/${shelf.id}`)}
-            >
+            <div className="flex-1 font-semibold">
               {shelf.name}
             </div>
 
             <button
-              onClick={() => handleEditShelf(shelf)}
-              style={{
-                marginRight: "0.5rem",
-                background: "#ff7a00",
-                border: "none",
-                color: "white",
-                borderRadius: "6px",
-                padding: "0.4rem 0.6rem",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEditShelf(shelf);
               }}
+              className="mr-2 bg-orange-500 text-white rounded-md p-2"
             >
-              <Pencil size={18} strokeWidth={2} />
+              <Pencil size={18} />
             </button>
 
             <button
-              onClick={() => onDeleteShelf(shelf.id)}
-              style={{
-                background: "#e53935",
-                border: "none",
-                color: "white",
-                borderRadius: "6px",
-                padding: "0.4rem 0.6rem",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+              onClick={(e) => {
+                e.stopPropagation();
+                onDeleteShelf(shelf.id);
               }}
+              className="bg-red-500 text-white rounded-md p-2"
             >
-              <Trash2 size={18} strokeWidth={2} />
+              <Trash2 size={18} />
             </button>
           </div>
         ))}

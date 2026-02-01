@@ -3,7 +3,7 @@ import type { Shelf, Box, Tool, Material } from "../../types/models";
 
 import ShelfHeader from "./ShelfHeader";
 import ShelfInfo from "./ShelfInfo";
-import ShelfTools from "./ShelfTools"; // <-- WICHTIG: exakt wie Dateiname!
+import ShelfTools from "./ShelfTools";
 import ShelfMaterials from "./ShelfMaterials";
 
 import BoxForm from "../../forms/BoxForm";
@@ -11,6 +11,7 @@ import ToolForm from "../../forms/ToolForm";
 import MaterialForm from "../../forms/MaterialForm";
 
 import QRLabel from "../qr/QRLabel";
+import QRScanner from "../qr/QRScanner";
 
 type Props = {
   shelf: Shelf;
@@ -60,8 +61,9 @@ export default function ShelfView({
   const [initialMaterial, setInitialMaterial] = useState<Material | null>(null);
 
   const [showQR, setShowQR] = useState(false);
+  const [showQRScanner, setShowQRScanner] = useState(false);
 
-  // 🔤 SORTIERUNG: alphabetisch nach name
+  // SORTIERUNG
   const shelfBoxes = boxes
     .filter((b) => b.shelfId === shelf.id)
     .sort((a, b) => a.name.localeCompare(b.name));
@@ -90,7 +92,8 @@ export default function ShelfView({
   }
 
   return (
-    <div style={{ padding: "1rem" }}>
+    <div className="flex flex-col h-full">
+
       {/* HEADER */}
       <ShelfHeader
         shelf={shelf}
@@ -100,46 +103,46 @@ export default function ShelfView({
         onAddTool={handleAddTool}
       />
 
-      {/* QR BUTTON */}
-      <div style={{ marginBottom: "1rem" }}>
+      {/* SUCHFELD + QR-SCANNER + QR-CODE BUTTON */}
+      <div className="flex items-center gap-3 bg-orange-50 border-b border-orange-200">
+
+        {/* Suchfeld */}
+        <input
+          type="text"
+          placeholder="In diesem Regal suchen…"
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+        />
+
+        {/* QR‑Scanner */}
+        <button
+          onClick={() => setShowQRScanner(true)}
+          className="w-11 h-11 flex items-center justify-center bg-orange-500 text-white rounded-md hover:bg-orange-600 transition"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-6 h-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M3 3h6v6H3V3zm12 0h6v6h-6V3zM3 15h6v6H3v-6zm12 0h6v6h-6v-6z" />
+          </svg>
+        </button>
+
+        {/* QR‑Code für Regal */}
         <button
           onClick={() => setShowQR(true)}
-          style={{
-            padding: "0.5rem 0.75rem",
-            background: "#ff7a00",
-            color: "white",
-            border: "none",
-            borderRadius: "6px",
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
+          className="px-3 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition text-sm font-semibold whitespace-nowrap"
         >
-          QR‑Code für Regal
+          Regal‑QR
         </button>
       </div>
 
       {/* QR MODAL */}
       {showQR && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.75)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 2000,
-            padding: "1rem",
-          }}
-        >
-          <div
-            style={{
-              background: "white",
-              padding: "1rem",
-              borderRadius: "12px",
-              maxWidth: "90%",
-            }}
-          >
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4">
+          <div className="bg-white p-4 rounded-xl max-w-[90%]">
             <QRLabel
               boxId={shelf.id}
               boxName={shelf.name}
@@ -149,22 +152,23 @@ export default function ShelfView({
 
             <button
               onClick={() => setShowQR(false)}
-              style={{
-                marginTop: "1rem",
-                width: "100%",
-                padding: "0.75rem",
-                background: "#333",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
+              className="mt-4 w-full py-2 bg-gray-800 text-white rounded-md font-semibold"
             >
               Schließen
             </button>
           </div>
         </div>
+      )}
+
+      {/* QR SCANNER */}
+      {showQRScanner && (
+        <QRScanner
+          onScan={(value) => {
+            setShowQRScanner(false);
+            window.location.href = `#/shelf/${value}`;
+          }}
+          onClose={() => setShowQRScanner(false)}
+        />
       )}
 
       {/* BOX FORM */}
@@ -173,11 +177,8 @@ export default function ShelfView({
           shelves={shelves}
           initialBox={initialBox ?? undefined}
           onSave={(box) => {
-            if (initialBox) {
-              onEditBox(box);
-            } else {
-              onAddBox(box.name, box.shelfId);
-            }
+            if (initialBox) onEditBox(box);
+            else onAddBox(box.name, box.shelfId);
 
             setShowBoxForm(false);
             setInitialBox(null);
@@ -239,9 +240,8 @@ export default function ShelfView({
           setShowBoxForm(true);
         }}
         onOpenBox={(boxId) => {
-  window.location.href = `#/box/${boxId}`;
-      }}
-
+          window.location.href = `#/box/${boxId}`;
+        }}
       />
 
       <ShelfTools

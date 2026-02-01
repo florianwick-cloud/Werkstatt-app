@@ -2,12 +2,13 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useState } from "react";
 import ShelfHeader from "./ShelfHeader";
 import ShelfInfo from "./ShelfInfo";
-import ShelfTools from "./ShelfTools"; // <-- WICHTIG: exakt wie Dateiname!
+import ShelfTools from "./ShelfTools";
 import ShelfMaterials from "./ShelfMaterials";
 import BoxForm from "../../forms/BoxForm";
 import ToolForm from "../../forms/ToolForm";
 import MaterialForm from "../../forms/MaterialForm";
 import QRLabel from "../qr/QRLabel";
+import QRScanner from "../qr/QRScanner";
 export default function ShelfView({ shelf, shelves, boxes, tools, materials, onBack, onAddBox, onEditBox, onDeleteBox, onAddTool, onEditTool, onDeleteTool, onAddMaterial, onEditMaterial, onDeleteMaterial, }) {
     const [showBoxForm, setShowBoxForm] = useState(false);
     const [showToolForm, setShowToolForm] = useState(false);
@@ -16,7 +17,8 @@ export default function ShelfView({ shelf, shelves, boxes, tools, materials, onB
     const [initialTool, setInitialTool] = useState(null);
     const [initialMaterial, setInitialMaterial] = useState(null);
     const [showQR, setShowQR] = useState(false);
-    // 🔤 SORTIERUNG: alphabetisch nach name
+    const [showQRScanner, setShowQRScanner] = useState(false);
+    // SORTIERUNG
     const shelfBoxes = boxes
         .filter((b) => b.shelfId === shelf.id)
         .sort((a, b) => a.name.localeCompare(b.name));
@@ -38,45 +40,14 @@ export default function ShelfView({ shelf, shelves, boxes, tools, materials, onB
         setInitialMaterial(null);
         setShowMaterialForm(true);
     }
-    return (_jsxs("div", { style: { padding: "1rem" }, children: [_jsx(ShelfHeader, { shelf: shelf, onBack: onBack, onAddBox: handleAddBox, onAddMaterial: handleAddMaterial, onAddTool: handleAddTool }), _jsx("div", { style: { marginBottom: "1rem" }, children: _jsx("button", { onClick: () => setShowQR(true), style: {
-                        padding: "0.5rem 0.75rem",
-                        background: "#ff7a00",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "6px",
-                        fontWeight: 600,
-                        cursor: "pointer",
-                    }, children: "QR\u2011Code f\u00FCr Regal" }) }), showQR && (_jsx("div", { style: {
-                    position: "fixed",
-                    inset: 0,
-                    background: "rgba(0,0,0,0.75)",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    zIndex: 2000,
-                    padding: "1rem",
-                }, children: _jsxs("div", { style: {
-                        background: "white",
-                        padding: "1rem",
-                        borderRadius: "12px",
-                        maxWidth: "90%",
-                    }, children: [_jsx(QRLabel, { boxId: shelf.id, boxName: shelf.name, location: "Regal", size: "medium" }), _jsx("button", { onClick: () => setShowQR(false), style: {
-                                marginTop: "1rem",
-                                width: "100%",
-                                padding: "0.75rem",
-                                background: "#333",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "8px",
-                                fontWeight: 600,
-                                cursor: "pointer",
-                            }, children: "Schlie\u00DFen" })] }) })), showBoxForm && (_jsx(BoxForm, { shelves: shelves, initialBox: initialBox ?? undefined, onSave: (box) => {
-                    if (initialBox) {
+    return (_jsxs("div", { className: "flex flex-col h-full", children: [_jsx(ShelfHeader, { shelf: shelf, onBack: onBack, onAddBox: handleAddBox, onAddMaterial: handleAddMaterial, onAddTool: handleAddTool }), _jsxs("div", { className: "flex items-center gap-3 bg-orange-50 border-b border-orange-200", children: [_jsx("input", { type: "text", placeholder: "In diesem Regal suchen\u2026", className: "flex-1 px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" }), _jsx("button", { onClick: () => setShowQRScanner(true), className: "w-11 h-11 flex items-center justify-center bg-orange-500 text-white rounded-md hover:bg-orange-600 transition", children: _jsx("svg", { xmlns: "http://www.w3.org/2000/svg", className: "w-6 h-6", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: _jsx("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M3 3h6v6H3V3zm12 0h6v6h-6V3zM3 15h6v6H3v-6zm12 0h6v6h-6v-6z" }) }) }), _jsx("button", { onClick: () => setShowQR(true), className: "px-3 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition text-sm font-semibold whitespace-nowrap", children: "Regal\u2011QR" })] }), showQR && (_jsx("div", { className: "fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4", children: _jsxs("div", { className: "bg-white p-4 rounded-xl max-w-[90%]", children: [_jsx(QRLabel, { boxId: shelf.id, boxName: shelf.name, location: "Regal", size: "medium" }), _jsx("button", { onClick: () => setShowQR(false), className: "mt-4 w-full py-2 bg-gray-800 text-white rounded-md font-semibold", children: "Schlie\u00DFen" })] }) })), showQRScanner && (_jsx(QRScanner, { onScan: (value) => {
+                    setShowQRScanner(false);
+                    window.location.href = `#/shelf/${value}`;
+                }, onClose: () => setShowQRScanner(false) })), showBoxForm && (_jsx(BoxForm, { shelves: shelves, initialBox: initialBox ?? undefined, onSave: (box) => {
+                    if (initialBox)
                         onEditBox(box);
-                    }
-                    else {
+                    else
                         onAddBox(box.name, box.shelfId);
-                    }
                     setShowBoxForm(false);
                     setInitialBox(null);
                 }, onCancel: () => {

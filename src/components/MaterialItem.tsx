@@ -22,8 +22,13 @@ export default function MaterialItem({ material, onEdit, onDelete }: Props) {
         background: "#fff",
       }}
     >
-      {/* Materialname */}
-      <span style={{ fontWeight: 600, flex: 1 }}>{material.name}</span>
+      {/* Linker Bereich: Name + Menge */}
+      <div style={{ flex: 1 }}>
+        <div style={{ fontWeight: 600 }}>{material.name}</div>
+        <div style={{ fontSize: "0.85rem", opacity: 0.7 }}>
+          {material.quantity} {material.unit}
+        </div>
+      </div>
 
       {/* Aktionen */}
       <div style={{ display: "flex", gap: "0.5rem" }}>

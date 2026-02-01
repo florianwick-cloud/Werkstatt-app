@@ -11,7 +11,7 @@ export default function MaterialItem({ material, onEdit, onDelete }) {
             alignItems: "center",
             gap: "1rem",
             background: "#fff",
-        }, children: [_jsx("span", { style: { fontWeight: 600, flex: 1 }, children: material.name }), _jsxs("div", { style: { display: "flex", gap: "0.5rem" }, children: [_jsx("button", { onClick: () => onEdit(material), style: {
+        }, children: [_jsxs("div", { style: { flex: 1 }, children: [_jsx("div", { style: { fontWeight: 600 }, children: material.name }), _jsxs("div", { style: { fontSize: "0.85rem", opacity: 0.7 }, children: [material.quantity, " ", material.unit] })] }), _jsxs("div", { style: { display: "flex", gap: "0.5rem" }, children: [_jsx("button", { onClick: () => onEdit(material), style: {
                             background: "#ff7a00",
                             color: "white",
                             border: "none",

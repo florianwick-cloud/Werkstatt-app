@@ -25,30 +25,6 @@ export default function ShelfMaterials({
     <section style={{ marginBottom: "1rem" }}>
       <h3>Material</h3>
 
-      <button
-        onClick={() =>
-          onAddMaterial({
-            name: "",
-            shelfId: shelf.id,
-            boxId: null,
-            quantity: 1,
-            unit: "pcs",
-          })
-        }
-        style={{
-          padding: "0.4rem 0.75rem",
-          background: "#ff7a00",
-          color: "white",
-          border: "none",
-          borderRadius: "6px",
-          fontWeight: 600,
-          cursor: "pointer",
-          marginBottom: "0.75rem",
-        }}
-      >
-        Material hinzufügen
-      </button>
-
       {materials.length === 0 && (
         <p style={{ opacity: 0.6 }}>Kein Material im Regal</p>
       )}
