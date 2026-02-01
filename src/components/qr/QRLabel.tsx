@@ -3,16 +3,20 @@ import QRCode from "react-qr-code";
 import html2canvas from "html2canvas";
 
 type Props = {
-  boxId: string;            // Offline-ID: "box:123"
-  boxName: string;          // Name der Kiste
-  location?: string;        // Regal / Fach
+  boxId: string;
+  boxName: string;
+  location?: string;
   size?: "small" | "medium" | "large";
 };
 
+// 300 DPI Umrechnung: cm → Pixel
+const CM_TO_PX = (cm: number) => Math.round(cm * (300 / 2.54));
+
+// Exakte Druckgrößen
 const SIZE_MAP = {
-  small: 354,   // 3 cm @ 300 DPI
-  medium: 591,  // 5 cm
-  large: 945,   // 8 cm
+  small: CM_TO_PX(3),   // 3 cm
+  medium: CM_TO_PX(5),  // 5 cm
+  large: CM_TO_PX(8),   // 8 cm
 };
 
 export default function QRLabel({
@@ -24,19 +28,33 @@ export default function QRLabel({
   const ref = useRef<HTMLDivElement>(null);
 
   // ------------------------------------------------------------
-  // EXPORT ALS PNG + SHARE SHEET (iPhone)
+  // EXPORT ALS DRUCKFÄHIGES PNG (300 DPI)
   // ------------------------------------------------------------
   const exportLabel = async () => {
     if (!ref.current) return;
 
+    // 1. Hochauflösend rendern (für Schärfe)
     const canvas = await html2canvas(ref.current, {
       backgroundColor: "#ffffff",
-      scale: 3, // gestochen scharf
+      scale: 3,
     });
 
-    const dataUrl = canvas.toDataURL("image/png");
+    // 2. Zielbreite für exakte Druckgröße (z. B. 5 cm = 591 px)
+    const targetWidth = SIZE_MAP[size];
+    const scaleFactor = targetWidth / canvas.width;
 
-    // iPhone Share Sheet
+    // 3. Neues Canvas in exakter Druckgröße
+    const outputCanvas = document.createElement("canvas");
+    outputCanvas.width = targetWidth;
+    outputCanvas.height = canvas.height * scaleFactor;
+
+    const ctx = outputCanvas.getContext("2d")!;
+    ctx.drawImage(canvas, 0, 0, outputCanvas.width, outputCanvas.height);
+
+    // 4. Finales PNG
+    const dataUrl = outputCanvas.toDataURL("image/png");
+
+    // 5. iPhone Share Sheet
     if (navigator.share) {
       const blob = await (await fetch(dataUrl)).blob();
       const file = new File([blob], `${boxName}.png`, { type: "image/png" });
@@ -52,24 +70,14 @@ export default function QRLabel({
       }
     }
 
-    // Fallback: Download
+    // 6. Fallback: Download
     const link = document.createElement("a");
     link.href = dataUrl;
     link.download = `${boxName}.png`;
     link.click();
   };
 
-  // ------------------------------------------------------------
-  // OFFLINE-MODUS: QR-CODE ENTHÄLT NUR DIE BOX-ID
-  // Beispiel: "box:123"
-  // Deine App erkennt das und navigiert offline zu /box/123
-  // ------------------------------------------------------------
-
   const qrValue = `box:${boxId}`;
-
-  // ------------------------------------------------------------
-  // DESIGN: Professionelles Mini-Label
-  // ------------------------------------------------------------
 
   return (
     <div
