@@ -4,11 +4,11 @@ type Context = "workshop" | "shelf" | "box";
 
 type Props = {
   context: Context;
-  onAddShelf?: () => void;
-  onAddBox?: () => void;
-  onAddMaterial?: () => void;
-  onAddTool?: () => void;
-  className?: string; // <-- NEU
+  onAddShelf?: (name: string) => void;
+  onAddBox?: (name: string) => void;
+  onAddMaterial?: (name: string) => void;
+  onAddTool?: (name: string) => void;
+  className?: string;
 };
 
 export default function AddMenu({
@@ -30,6 +30,12 @@ export default function AddMenu({
     setOpen(false);
   }
 
+  function askNameAndRun(callback?: (name: string) => void, label?: string) {
+    if (!callback) return;
+    const name = prompt(label ?? "Name eingeben:");
+    if (name && name.trim() !== "") callback(name.trim());
+  }
+
   return (
     <div style={{ position: "relative" }}>
       {/* PLUS BUTTON */}
@@ -44,7 +50,7 @@ export default function AddMenu({
           borderRadius: "8px",
           cursor: "pointer",
           fontWeight: 600,
-          fontSize: "2.4rem", // groß
+          fontSize: "2.4rem",
           lineHeight: "1",
         }}
         aria-label="Hinzufügen"
@@ -61,10 +67,10 @@ export default function AddMenu({
             right: 0,
             top: "3rem",
             background: "white",
-            border: "1px solid #ddd",        // <-- Rahmen zurück
-            borderRadius: "8px",             // <-- Rundung zurück
+            border: "1px solid #ddd",
+            borderRadius: "8px",
             padding: "0.5rem",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.15)", // <-- Schatten zurück
+            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
             zIndex: 9999,
             minWidth: "180px",
             color: "black",
@@ -72,43 +78,85 @@ export default function AddMenu({
         >
           {context === "workshop" && (
             <>
-              {onAddShelf && (
-                <MenuItem label="Regal hinzufügen" onClick={() => { onAddShelf(); closeMenu(); }} />
-              )}
-              {onAddBox && (
-                <MenuItem label="Kiste hinzufügen" onClick={() => { onAddBox(); closeMenu(); }} />
-              )}
-              {onAddMaterial && (
-                <MenuItem label="Material hinzufügen" onClick={() => { onAddMaterial(); closeMenu(); }} />
-              )}
-              {onAddTool && (
-                <MenuItem label="Werkzeug hinzufügen" onClick={() => { onAddTool(); closeMenu(); }} />
-              )}
+              <MenuItem
+                label="Regal hinzufügen"
+                onClick={() => {
+                  askNameAndRun(onAddShelf, "Name des Regals:");
+                  closeMenu();
+                }}
+              />
+
+              <MenuItem
+                label="Kiste hinzufügen"
+                onClick={() => {
+                  askNameAndRun(onAddBox, "Name der Kiste:");
+                  closeMenu();
+                }}
+              />
+
+              <MenuItem
+                label="Material hinzufügen"
+                onClick={() => {
+                  askNameAndRun(onAddMaterial, "Name des Materials:");
+                  closeMenu();
+                }}
+              />
+
+              <MenuItem
+                label="Werkzeug hinzufügen"
+                onClick={() => {
+                  askNameAndRun(onAddTool, "Name des Werkzeugs:");
+                  closeMenu();
+                }}
+              />
             </>
           )}
 
           {context === "shelf" && (
             <>
-              {onAddBox && (
-                <MenuItem label="Kiste hinzufügen" onClick={() => { onAddBox(); closeMenu(); }} />
-              )}
-              {onAddMaterial && (
-                <MenuItem label="Material hinzufügen" onClick={() => { onAddMaterial(); closeMenu(); }} />
-              )}
-              {onAddTool && (
-                <MenuItem label="Werkzeug hinzufügen" onClick={() => { onAddTool(); closeMenu(); }} />
-              )}
+              <MenuItem
+                label="Kiste hinzufügen"
+                onClick={() => {
+                  askNameAndRun(onAddBox, "Name der Kiste:");
+                  closeMenu();
+                }}
+              />
+
+              <MenuItem
+                label="Material hinzufügen"
+                onClick={() => {
+                  askNameAndRun(onAddMaterial, "Name des Materials:");
+                  closeMenu();
+                }}
+              />
+
+              <MenuItem
+                label="Werkzeug hinzufügen"
+                onClick={() => {
+                  askNameAndRun(onAddTool, "Name des Werkzeugs:");
+                  closeMenu();
+                }}
+              />
             </>
           )}
 
           {context === "box" && (
             <>
-              {onAddMaterial && (
-                <MenuItem label="Material hinzufügen" onClick={() => { onAddMaterial(); closeMenu(); }} />
-              )}
-              {onAddTool && (
-                <MenuItem label="Werkzeug hinzufügen" onClick={() => { onAddTool(); closeMenu(); }} />
-              )}
+              <MenuItem
+                label="Material hinzufügen"
+                onClick={() => {
+                  askNameAndRun(onAddMaterial, "Name des Materials:");
+                  closeMenu();
+                }}
+              />
+
+              <MenuItem
+                label="Werkzeug hinzufügen"
+                onClick={() => {
+                  askNameAndRun(onAddTool, "Name des Werkzeugs:");
+                  closeMenu();
+                }}
+              />
             </>
           )}
         </div>
