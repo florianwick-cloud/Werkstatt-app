@@ -103,20 +103,20 @@ export default function ShelfView({
         onAddTool={handleAddTool}
       />
 
-      {/* SUCHFELD + QR-SCANNER + QR-CODE BUTTON */}
-      <div className="flex items-center gap-3 bg-orange-50 border-b border-orange-200">
+      {/* SUCHFELD + QR-SCANNER + QR-CODE BUTTON (wie WorkshopView) */}
+      <div className="flex items-center gap-2 px-4 py-3 bg-orange-50 border-b border-orange-200">
 
         {/* Suchfeld */}
         <input
           type="text"
           placeholder="In diesem Regal suchen…"
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+          className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
         />
 
         {/* QR‑Scanner */}
         <button
           onClick={() => setShowQRScanner(true)}
-          className="w-11 h-11 flex items-center justify-center bg-orange-500 text-white rounded-md hover:bg-orange-600 transition"
+          className="w-10 h-10 flex items-center justify-center bg-orange-500 text-white rounded-md hover:bg-orange-600 transition"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -230,45 +230,49 @@ export default function ShelfView({
         />
       )}
 
-      {/* CONTENT */}
-      <ShelfInfo
-        shelf={shelf}
-        boxes={shelfBoxes}
-        onDeleteBox={onDeleteBox}
-        onEditBox={(box) => {
-          setInitialBox(box);
-          setShowBoxForm(true);
-        }}
-        onOpenBox={(boxId) => {
-          window.location.href = `#/box/${boxId}`;
-        }}
-      />
+      {/* CONTENT WRAPPER – wie WorkshopView */}
+      <div className="p-4">
 
-      <ShelfTools
-        tools={shelfTools}
-        shelf={shelf}
-        shelves={shelves}
-        boxes={boxes}
-        onAddTool={onAddTool}
-        onEditTool={(tool: Tool) => {
-          setInitialTool(tool);
-          setShowToolForm(true);
-        }}
-        onDeleteTool={onDeleteTool}
-      />
+        <ShelfInfo
+          shelf={shelf}
+          boxes={shelfBoxes}
+          onDeleteBox={onDeleteBox}
+          onEditBox={(box) => {
+            setInitialBox(box);
+            setShowBoxForm(true);
+          }}
+          onOpenBox={(boxId) => {
+            window.location.href = `#/box/${boxId}`;
+          }}
+        />
 
-      <ShelfMaterials
-        materials={shelfMaterials}
-        shelf={shelf}
-        shelves={shelves}
-        boxes={boxes}
-        onAddMaterial={onAddMaterial}
-        onEditMaterial={(material: Material) => {
-          setInitialMaterial(material);
-          setShowMaterialForm(true);
-        }}
-        onDeleteMaterial={onDeleteMaterial}
-      />
+        <ShelfTools
+          tools={shelfTools}
+          shelf={shelf}
+          shelves={shelves}
+          boxes={boxes}
+          onAddTool={onAddTool}
+          onEditTool={(tool: Tool) => {
+            setInitialTool(tool);
+            setShowToolForm(true);
+          }}
+          onDeleteTool={onDeleteTool}
+        />
+
+        <ShelfMaterials
+          materials={shelfMaterials}
+          shelf={shelf}
+          shelves={shelves}
+          boxes={boxes}
+          onAddMaterial={onAddMaterial}
+          onEditMaterial={(material: Material) => {
+            setInitialMaterial(material);
+            setShowMaterialForm(true);
+          }}
+          onDeleteMaterial={onDeleteMaterial}
+        />
+
+      </div>
     </div>
   );
 }

@@ -87,20 +87,20 @@ export default function BoxView({
         onAddMaterial={handleAddMaterial}
       />
 
-      {/* SUCHFELD + QR-SCANNER + QR-CODE BUTTON */}
-      <div className="flex items-center gap-3 bg-orange-50 border-b border-orange-200">
+      {/* SUCHFELD + QR-SCANNER + QR-CODE BUTTON (wie WorkshopView/ShelfView) */}
+      <div className="flex items-center gap-2 px-4 py-3 bg-orange-50 border-b border-orange-200">
 
         {/* Suchfeld */}
         <input
           type="text"
           placeholder="In dieser Box suchen…"
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+          className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
         />
 
         {/* QR‑Scanner */}
         <button
           onClick={() => setShowQRScanner(true)}
-          className="w-11 h-11 flex items-center justify-center bg-orange-500 text-white rounded-md hover:bg-orange-600 transition"
+          className="w-10 h-10 flex items-center justify-center bg-orange-500 text-white rounded-md hover:bg-orange-600 transition"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -195,30 +195,34 @@ export default function BoxView({
         />
       )}
 
-      {/* CONTENT */}
-      <BoxTools
-        tools={boxTools}
-        shelf={shelf}
-        shelves={shelves}
-        boxes={boxes}
-        onEditTool={(tool) => {
-          setInitialTool(tool);
-          setShowToolForm(true);
-        }}
-        onDeleteTool={onDeleteTool}
-      />
+      {/* CONTENT WRAPPER – wie WorkshopView/ShelfView */}
+      <div className="p-4">
 
-      <BoxMaterials
-        materials={boxMaterials}
-        shelf={shelf}
-        shelves={shelves}
-        boxes={boxes}
-        onEditMaterial={(material) => {
-          setInitialMaterial(material);
-          setShowMaterialForm(true);
-        }}
-        onDeleteMaterial={onDeleteMaterial}
-      />
+        <BoxTools
+          tools={boxTools}
+          shelf={shelf}
+          shelves={shelves}
+          boxes={boxes}
+          onEditTool={(tool) => {
+            setInitialTool(tool);
+            setShowToolForm(true);
+          }}
+          onDeleteTool={onDeleteTool}
+        />
+
+        <BoxMaterials
+          materials={boxMaterials}
+          shelf={shelf}
+          shelves={shelves}
+          boxes={boxes}
+          onEditMaterial={(material) => {
+            setInitialMaterial(material);
+            setShowMaterialForm(true);
+          }}
+          onDeleteMaterial={onDeleteMaterial}
+        />
+
+      </div>
     </div>
   );
 }
