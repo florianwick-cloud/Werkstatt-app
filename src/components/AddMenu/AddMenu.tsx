@@ -4,10 +4,13 @@ type Context = "workshop" | "shelf" | "box";
 
 type Props = {
   context: Context;
+
+  // WICHTIG: Signaturen bleiben identisch zur Originalversion
   onAddShelf?: (name: string) => void;
   onAddBox?: (name: string) => void;
   onAddMaterial?: (name: string) => void;
   onAddTool?: (name: string) => void;
+
   className?: string;
 };
 
@@ -28,12 +31,6 @@ export default function AddMenu({
 
   function closeMenu() {
     setOpen(false);
-  }
-
-  function askNameAndRun(callback?: (name: string) => void, label?: string) {
-    if (!callback) return;
-    const name = prompt(label ?? "Name eingeben:");
-    if (name && name.trim() !== "") callback(name.trim());
   }
 
   return (
@@ -81,7 +78,7 @@ export default function AddMenu({
               <MenuItem
                 label="Regal hinzufügen"
                 onClick={() => {
-                  askNameAndRun(onAddShelf, "Name des Regals:");
+                  onAddShelf?.("");
                   closeMenu();
                 }}
               />
@@ -89,7 +86,7 @@ export default function AddMenu({
               <MenuItem
                 label="Kiste hinzufügen"
                 onClick={() => {
-                  askNameAndRun(onAddBox, "Name der Kiste:");
+                  onAddBox?.("");
                   closeMenu();
                 }}
               />
@@ -97,7 +94,7 @@ export default function AddMenu({
               <MenuItem
                 label="Material hinzufügen"
                 onClick={() => {
-                  askNameAndRun(onAddMaterial, "Name des Materials:");
+                  onAddMaterial?.("");
                   closeMenu();
                 }}
               />
@@ -105,7 +102,7 @@ export default function AddMenu({
               <MenuItem
                 label="Werkzeug hinzufügen"
                 onClick={() => {
-                  askNameAndRun(onAddTool, "Name des Werkzeugs:");
+                  onAddTool?.("");
                   closeMenu();
                 }}
               />
@@ -117,7 +114,7 @@ export default function AddMenu({
               <MenuItem
                 label="Kiste hinzufügen"
                 onClick={() => {
-                  askNameAndRun(onAddBox, "Name der Kiste:");
+                  onAddBox?.("");
                   closeMenu();
                 }}
               />
@@ -125,7 +122,7 @@ export default function AddMenu({
               <MenuItem
                 label="Material hinzufügen"
                 onClick={() => {
-                  askNameAndRun(onAddMaterial, "Name des Materials:");
+                  onAddMaterial?.("");
                   closeMenu();
                 }}
               />
@@ -133,7 +130,7 @@ export default function AddMenu({
               <MenuItem
                 label="Werkzeug hinzufügen"
                 onClick={() => {
-                  askNameAndRun(onAddTool, "Name des Werkzeugs:");
+                  onAddTool?.("");
                   closeMenu();
                 }}
               />
@@ -145,7 +142,7 @@ export default function AddMenu({
               <MenuItem
                 label="Material hinzufügen"
                 onClick={() => {
-                  askNameAndRun(onAddMaterial, "Name des Materials:");
+                  onAddMaterial?.("");
                   closeMenu();
                 }}
               />
@@ -153,7 +150,7 @@ export default function AddMenu({
               <MenuItem
                 label="Werkzeug hinzufügen"
                 onClick={() => {
-                  askNameAndRun(onAddTool, "Name des Werkzeugs:");
+                  onAddTool?.("");
                   closeMenu();
                 }}
               />

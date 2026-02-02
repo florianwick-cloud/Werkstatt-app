@@ -7,6 +7,11 @@ import QRScanner from "../components/qr/QRScanner";
 import GlobalSearch from "../components/GlobalSearch";
 import WorkshopHeader from "../components/WorkshopHeader";
 
+import BoxForm from "../forms/BoxForm";
+import ToolForm from "../forms/ToolForm";
+import MaterialForm from "../forms/MaterialForm";
+import ShelfForm from "../forms/ShelfForm";
+
 import { QrCode, Pencil, Trash2 } from "lucide-react";
 
 type Props = {
@@ -19,12 +24,12 @@ type Props = {
   onSearchChange: (value: string) => void;
   searchResults: SearchResult[];
 
-  onAddShelf: (name: string) => void;
-  onAddBox: (name: string) => void;
-  onAddTool: (name: string) => void;
-  onAddMaterial: (name: string) => void;
+  onAddShelf: (shelf: Omit<Shelf, "id">) => void;
+  onAddBox: (box: Omit<Box, "id">) => void;
+  onAddTool: (tool: Omit<Tool, "id">) => void;
+  onAddMaterial: (material: Omit<Material, "id">) => void;
 
-  onUpdateShelf: (id: string, name: string) => void;
+  onUpdateShelf: (shelf: Shelf) => void;
   onDeleteShelf: (id: string) => void;
 };
 
@@ -47,34 +52,47 @@ export default function WorkshopView({
   const navigate = useNavigate();
   const [showScanner, setShowScanner] = useState(false);
 
+  // FORM STATES
+  const [showShelfForm, setShowShelfForm] = useState(false);
+  const [showBoxForm, setShowBoxForm] = useState(false);
+  const [showToolForm, setShowToolForm] = useState(false);
+  const [showMaterialForm, setShowMaterialForm] = useState(false);
+
+  const [initialShelf, setInitialShelf] = useState<Shelf | null>(null);
+  const [initialBox, setInitialBox] = useState<Box | null>(null);
+  const [initialTool, setInitialTool] = useState<Tool | null>(null);
+  const [initialMaterial, setInitialMaterial] = useState<Material | null>(null);
+
   function handleScan(value: string) {
     setShowScanner(false);
     navigate(`/shelf/${value}`);
   }
 
+  // ADD HANDLER
   function handleAddShelf() {
-    const name = prompt("Name des Regals:");
-    if (name) onAddShelf(name);
+    setInitialShelf(null);
+    setShowShelfForm(true);
   }
 
   function handleAddBox() {
-    const name = prompt("Name der Kiste:");
-    if (name) onAddBox(name);
+    setInitialBox(null);
+    setShowBoxForm(true);
   }
 
   function handleAddTool() {
-    const name = prompt("Name des Werkzeugs:");
-    if (name) onAddTool(name);
+    setInitialTool(null);
+    setShowToolForm(true);
   }
 
   function handleAddMaterial() {
-    const name = prompt("Name des Materials:");
-    if (name) onAddMaterial(name);
+    setInitialMaterial(null);
+    setShowMaterialForm(true);
   }
 
+  // EDIT SHELF
   function handleEditShelf(shelf: Shelf) {
-    const name = prompt("Regal umbenennen:", shelf.name);
-    if (name) onUpdateShelf(shelf.id, name);
+    setInitialShelf(shelf);
+    setShowShelfForm(true);
   }
 
   const sortedShelves = [...shelves].sort((a, b) =>
@@ -92,15 +110,14 @@ export default function WorkshopView({
         onAddMaterial={handleAddMaterial}
       />
 
-      {/* SUCHFELD + QR UNTER DEM HEADER */}
+      {/* SUCHFELD + QR */}
       <div className="flex items-center gap-2 px-4 py-3 bg-orange-50 border-b border-orange-200">
         <input
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Suchen…"
           className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-orange-400"
-          />
-
+        />
 
         <button
           onClick={() => setShowScanner(true)}
@@ -160,6 +177,98 @@ export default function WorkshopView({
           />
         )}
       </div>
+
+      {/* SHELF FORM */}
+{showShelfForm && (
+  <ShelfForm
+    initialShelf={initialShelf ?? undefined}
+    onSave={(shelf) => {
+      if (initialShelf) {
+        onUpdateShelf({
+          ...shelf,
+          id: initialShelf.id, // id sicherstellen
+        });
+      } else {
+        onAddShelf(shelf);
+      }
+
+      setShowShelfForm(false);
+      setInitialShelf(null);
+    }}
+    onCancel={() => {
+      setShowShelfForm(false);
+      setInitialShelf(null);
+    }}
+  />
+)}
+
+
+      {/* BOX FORM */}
+      {showBoxForm && (
+        <BoxForm
+          shelves={shelves}
+          initialBox={initialBox ?? undefined}
+          onSave={(box) => {
+            if (initialBox) {
+              // EDIT
+              // (du hast keinen onUpdateBox im Workshop, daher ignoriert)
+            } else {
+              onAddBox(box);
+            }
+            setShowBoxForm(false);
+            setInitialBox(null);
+          }}
+          onCancel={() => {
+            setShowBoxForm(false);
+            setInitialBox(null);
+          }}
+        />
+      )}
+
+      {/* TOOL FORM */}
+      {showToolForm && (
+        <ToolForm
+          initialTool={initialTool ?? undefined}
+          shelves={shelves}
+          boxes={boxes}
+          onSave={(tool) => {
+            if (initialTool) {
+              // EDIT
+            } else {
+              onAddTool(tool);
+            }
+            setShowToolForm(false);
+            setInitialTool(null);
+          }}
+          onCancel={() => {
+            setShowToolForm(false);
+            setInitialTool(null);
+          }}
+        />
+      )}
+
+      {/* MATERIAL FORM */}
+      {showMaterialForm && (
+        <MaterialForm
+          initialMaterial={initialMaterial ?? undefined}
+          shelves={shelves}
+          boxes={boxes}
+          onSave={(material) => {
+            if (initialMaterial) {
+              // EDIT
+            } else {
+              onAddMaterial(material);
+            }
+            setShowMaterialForm(false);
+            setInitialMaterial(null);
+          }}
+          onCancel={() => {
+            setShowMaterialForm(false);
+            setInitialMaterial(null);
+          }}
+        />
+      )}
+
     </div>
   );
 }

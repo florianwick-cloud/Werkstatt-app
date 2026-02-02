@@ -9,13 +9,6 @@ export default function AddMenu({ context, onAddShelf, onAddBox, onAddMaterial, 
     function closeMenu() {
         setOpen(false);
     }
-    function askNameAndRun(callback, label) {
-        if (!callback)
-            return;
-        const name = prompt(label ?? "Name eingeben:");
-        if (name && name.trim() !== "")
-            callback(name.trim());
-    }
     return (_jsxs("div", { style: { position: "relative" }, children: [_jsx("button", { onClick: toggle, className: className, style: {
                     background: "#ff7a00",
                     color: "white",
@@ -39,31 +32,31 @@ export default function AddMenu({ context, onAddShelf, onAddBox, onAddMaterial, 
                     minWidth: "180px",
                     color: "black",
                 }, children: [context === "workshop" && (_jsxs(_Fragment, { children: [_jsx(MenuItem, { label: "Regal hinzuf\u00FCgen", onClick: () => {
-                                    askNameAndRun(onAddShelf, "Name des Regals:");
+                                    onAddShelf?.("");
                                     closeMenu();
                                 } }), _jsx(MenuItem, { label: "Kiste hinzuf\u00FCgen", onClick: () => {
-                                    askNameAndRun(onAddBox, "Name der Kiste:");
+                                    onAddBox?.("");
                                     closeMenu();
                                 } }), _jsx(MenuItem, { label: "Material hinzuf\u00FCgen", onClick: () => {
-                                    askNameAndRun(onAddMaterial, "Name des Materials:");
+                                    onAddMaterial?.("");
                                     closeMenu();
                                 } }), _jsx(MenuItem, { label: "Werkzeug hinzuf\u00FCgen", onClick: () => {
-                                    askNameAndRun(onAddTool, "Name des Werkzeugs:");
+                                    onAddTool?.("");
                                     closeMenu();
                                 } })] })), context === "shelf" && (_jsxs(_Fragment, { children: [_jsx(MenuItem, { label: "Kiste hinzuf\u00FCgen", onClick: () => {
-                                    askNameAndRun(onAddBox, "Name der Kiste:");
+                                    onAddBox?.("");
                                     closeMenu();
                                 } }), _jsx(MenuItem, { label: "Material hinzuf\u00FCgen", onClick: () => {
-                                    askNameAndRun(onAddMaterial, "Name des Materials:");
+                                    onAddMaterial?.("");
                                     closeMenu();
                                 } }), _jsx(MenuItem, { label: "Werkzeug hinzuf\u00FCgen", onClick: () => {
-                                    askNameAndRun(onAddTool, "Name des Werkzeugs:");
+                                    onAddTool?.("");
                                     closeMenu();
                                 } })] })), context === "box" && (_jsxs(_Fragment, { children: [_jsx(MenuItem, { label: "Material hinzuf\u00FCgen", onClick: () => {
-                                    askNameAndRun(onAddMaterial, "Name des Materials:");
+                                    onAddMaterial?.("");
                                     closeMenu();
                                 } }), _jsx(MenuItem, { label: "Werkzeug hinzuf\u00FCgen", onClick: () => {
-                                    askNameAndRun(onAddTool, "Name des Werkzeugs:");
+                                    onAddTool?.("");
                                     closeMenu();
                                 } })] }))] }))] }));
 }

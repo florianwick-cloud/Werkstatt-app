@@ -15,8 +15,6 @@ import BoxRoute from "./routes/BoxRoute";
 import type { Shelf, Box, Tool, Material } from "./types/models";
 import type { DbAdd, DbPut, DbDelete } from "./types/db";
 
-
-
 type BaseRouteProps = {
   shelves: Shelf[];
   boxes: Box[];
@@ -132,28 +130,31 @@ export default function App() {
             searchResults={searchResults}
 
             /* ➕ REGAL */
-            onAddShelf={async (name) => {
-              const shelf: Shelf = { id: crypto.randomUUID(), name };
+            onAddShelf={async (data) => {
+              const shelf: Shelf = {
+                id: crypto.randomUUID(),
+                name: data.name,
+              };
               await dbAdd("shelves", shelf);
               setShelves((p) => [...p, shelf]);
             }}
 
-            /* ➕ KISTE (mit Default shelfId) */
-            onAddBox={async (name) => {
+            /* ➕ KISTE */
+            onAddBox={async (data) => {
               const box: Box = {
                 id: crypto.randomUUID(),
-                name,
-                shelfId: "", // Default, weil wir im Root sind
+                name: data.name,
+                shelfId: "",
               };
               await dbAdd("boxes", box);
               setBoxes((p) => [...p, box]);
             }}
 
-            /* ➕ WERKZEUG (mit Default shelfId + boxId) */
-            onAddTool={async (name) => {
+            /* ➕ WERKZEUG */
+            onAddTool={async (data) => {
               const tool: Tool = {
                 id: crypto.randomUUID(),
-                name,
+                name: data.name,
                 shelfId: "",
                 boxId: "",
               };
@@ -161,11 +162,11 @@ export default function App() {
               setTools((p) => [...p, tool]);
             }}
 
-            /* ➕ MATERIAL (mit Default quantity, unit, shelfId, boxId) */
-            onAddMaterial={async (name) => {
+            /* ➕ MATERIAL */
+            onAddMaterial={async (data) => {
               const material: Material = {
                 id: crypto.randomUUID(),
-                name,
+                name: data.name,
                 quantity: 0,
                 unit: "",
                 shelfId: "",
@@ -176,13 +177,12 @@ export default function App() {
             }}
 
             /* ✏️ REGAL UPDATE */
-            onUpdateShelf={async (id, name) => {
+            onUpdateShelf={async (shelf) => {
               setShelves((prev) =>
                 prev.map((s) => {
-                  if (s.id !== id) return s;
-                  const updated = { ...s, name };
-                  dbPut("shelves", updated);
-                  return updated;
+                  if (s.id !== shelf.id) return s;
+                  dbPut("shelves", shelf);
+                  return shelf;
                 })
               );
             }}
