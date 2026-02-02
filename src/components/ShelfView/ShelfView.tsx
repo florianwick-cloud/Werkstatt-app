@@ -163,12 +163,17 @@ export default function ShelfView({
       {/* QR SCANNER */}
       {showQRScanner && (
         <QRScanner
-          onScan={(value) => {
-            setShowQRScanner(false);
-            window.location.href = `#/shelf/${value}`;
-          }}
-          onClose={() => setShowQRScanner(false)}
-        />
+  onScan={(value) => {
+         setShowQRScanner(false);
+
+         // QR-Code-Format: "box:<id>"
+         const id = value.includes(":") ? value.split(":")[1] : value;
+
+        window.location.href = `#/shelf/${id}`;
+        }}
+           onClose={() => setShowQRScanner(false)}
+          />
+
       )}
 
       {/* BOX FORM */}

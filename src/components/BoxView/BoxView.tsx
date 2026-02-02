@@ -147,13 +147,18 @@ export default function BoxView({
       {/* QR SCANNER */}
       {showQRScanner && (
         <QRScanner
-          onScan={(value) => {
-            setShowQRScanner(false);
-            window.location.href = `#/box/${value}`;
-          }}
-          onClose={() => setShowQRScanner(false)}
-        />
-      )}
+        onScan={(value) => {
+       setShowQRScanner(false);
+
+      const id = value.includes(":") ? value.split(":")[1] : value;
+
+      window.location.href = `#/box/${id}`;
+    }}
+    onClose={() => setShowQRScanner(false)}
+  />
+)}
+
+
 
       {/* TOOL FORM */}
       {showToolForm && (
