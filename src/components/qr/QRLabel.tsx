@@ -1,22 +1,27 @@
-import { useRef } from "react";
-import QRCode from "react-qr-code";
-import html2canvas from "html2canvas";
+import { useRef, useState } from "react";
+import * as QRCode from "qrcode";
+
+type LabelSize = "small" | "medium" | "large";
 
 type Props = {
   boxId: string;
   boxName: string;
   location?: string;
-  size?: "small" | "medium" | "large";
+  size?: LabelSize;
 };
 
-// 300 DPI Umrechnung: cm → Pixel
 const CM_TO_PX = (cm: number) => Math.round(cm * (300 / 2.54));
 
-// Exakte Druckgrößen
-const SIZE_MAP = {
-  small: CM_TO_PX(3),   // 3 cm
-  medium: CM_TO_PX(5),  // 5 cm
-  large: CM_TO_PX(8),   // 8 cm
+const PRINT_SIZE_MAP: Record<LabelSize, number> = {
+  small: CM_TO_PX(3),
+  medium: CM_TO_PX(5),
+  large: CM_TO_PX(8),
+};
+
+const SCREEN_SIZE_MAP: Record<LabelSize, number> = {
+  small: 140,
+  medium: 180,
+  large: 240,
 };
 
 export default function QRLabel({
@@ -25,37 +30,55 @@ export default function QRLabel({
   location,
   size = "medium",
 }: Props) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [qrPng, setQrPng] = useState<string | null>(null);
 
-  // ------------------------------------------------------------
-  // EXPORT ALS DRUCKFÄHIGES PNG (300 DPI)
-  // ------------------------------------------------------------
-  const exportLabel = async () => {
-    if (!ref.current) return;
-
-    // 1. Hochauflösend rendern (für Schärfe)
-    const canvas = await html2canvas(ref.current, {
-      backgroundColor: "#ffffff",
-      scale: 3,
+  const generateQr = async () => {
+    const png = await QRCode.toDataURL(`box:${boxId}`, {
+      width: 1024,
+      margin: 1,
     });
+    setQrPng(png);
+  };
 
-    // 2. Zielbreite für exakte Druckgröße (z. B. 5 cm = 591 px)
-    const targetWidth = SIZE_MAP[size];
-    const scaleFactor = targetWidth / canvas.width;
+  const exportLabel = async () => {
+    if (!ref.current || !qrPng) return;
 
-    // 3. Neues Canvas in exakter Druckgröße
-    const outputCanvas = document.createElement("canvas");
-    outputCanvas.width = targetWidth;
-    outputCanvas.height = canvas.height * scaleFactor;
+    const targetWidth = PRINT_SIZE_MAP[size];
+    const targetHeight = targetWidth * 1.2;
 
-    const ctx = outputCanvas.getContext("2d")!;
-    ctx.drawImage(canvas, 0, 0, outputCanvas.width, outputCanvas.height);
+    const canvas = document.createElement("canvas");
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
 
-    // 4. Finales PNG
-    const dataUrl = outputCanvas.toDataURL("image/png");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-    // 5. iPhone Share Sheet
-    if (navigator.share) {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const qrImg = new Image();
+    qrImg.src = qrPng;
+
+    await new Promise((resolve) => (qrImg.onload = resolve));
+
+    const qrSize = targetWidth * 0.75;
+    ctx.drawImage(qrImg, (targetWidth - qrSize) / 2, 20, qrSize, qrSize);
+
+    ctx.fillStyle = "#222";
+    ctx.font = `${Math.round(targetWidth * 0.12)}px system-ui`;
+    ctx.textAlign = "center";
+    ctx.fillText(boxName, targetWidth / 2, qrSize + 60);
+
+    if (location) {
+      ctx.fillStyle = "#666";
+      ctx.font = `${Math.round(targetWidth * 0.07)}px system-ui`;
+      ctx.fillText(location, targetWidth / 2, qrSize + 100);
+    }
+
+    const dataUrl = canvas.toDataURL("image/png");
+
+    if (navigator.share && "canShare" in navigator) {
       const blob = await (await fetch(dataUrl)).blob();
       const file = new File([blob], `${boxName}.png`, { type: "image/png" });
 
@@ -66,23 +89,24 @@ export default function QRLabel({
         });
         return;
       } catch (err) {
-        console.log("Share failed, fallback to download");
+        console.log("Share failed, fallback to download", err);
       }
     }
 
-    // 6. Fallback: Download
     const link = document.createElement("a");
     link.href = dataUrl;
     link.download = `${boxName}.png`;
     link.click();
   };
 
-  const qrValue = `box:${boxId}`;
+  if (!qrPng) generateQr();
+
+  const screenWidth = SCREEN_SIZE_MAP[size];
 
   return (
     <div
       style={{
-        width: SIZE_MAP[size],
+        width: screenWidth,
         background: "white",
         padding: "1.25rem",
         borderRadius: "12px",
@@ -92,7 +116,6 @@ export default function QRLabel({
       }}
     >
       <div ref={ref}>
-        {/* QR-Code */}
         <div
           style={{
             background: "white",
@@ -102,10 +125,18 @@ export default function QRLabel({
             display: "inline-block",
           }}
         >
-          <QRCode value={qrValue} size={SIZE_MAP[size] * 0.75} />
+          {qrPng && (
+            <img
+              src={qrPng}
+              alt="QR Code"
+              style={{
+                width: screenWidth * 0.75,
+                height: screenWidth * 0.75,
+              }}
+            />
+          )}
         </div>
 
-        {/* Box-Name */}
         <div
           style={{
             marginTop: "0.75rem",
@@ -117,7 +148,6 @@ export default function QRLabel({
           {boxName}
         </div>
 
-        {/* Standort */}
         {location && (
           <div
             style={{
@@ -131,7 +161,6 @@ export default function QRLabel({
         )}
       </div>
 
-      {/* Export-Button */}
       <button
         onClick={exportLabel}
         style={{
