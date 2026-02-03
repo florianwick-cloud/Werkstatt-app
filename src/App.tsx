@@ -15,20 +15,6 @@ import BoxRoute from "./routes/BoxRoute";
 import type { Shelf, Box, Tool, Material } from "./types/models";
 import type { DbAdd, DbPut, DbDelete } from "./types/db";
 
-type BaseRouteProps = {
-  shelves: Shelf[];
-  boxes: Box[];
-  tools: Tool[];
-  materials: Material[];
-
-  dbAdd: DbAdd;
-  dbPut: DbPut;
-  dbDelete: DbDelete;
-};
-
-type BoxRouteProps = BaseRouteProps;
-type ShelfRouteProps = BaseRouteProps;
-
 /* =========================
    APP ROOT
    ========================= */
@@ -144,36 +130,28 @@ export default function App() {
               const box: Box = {
                 id: crypto.randomUUID(),
                 name: data.name,
-                shelfId: "",
+                shelfId: data.shelfId, // FIX: kommt jetzt korrekt aus BoxForm
               };
               await dbAdd("boxes", box);
               setBoxes((p) => [...p, box]);
             }}
 
-            /* ➕ WERKZEUG – jetzt mit allen Feldern inkl. imageUrl */
+            /* ➕ WERKZEUG – jetzt 1:1 übernehmen */
             onAddTool={async (data) => {
               const tool: Tool = {
                 id: crypto.randomUUID(),
-                name: data.name,
-                description: data.description ?? "",
-                shelfId: data.shelfId ?? "",
-                boxId: data.boxId ?? null,
-                imageUrl: data.imageUrl, // ⭐ wichtig für Bilder
+                ...data, // FIX: übernimmt shelfId, boxId, imageUrl korrekt
               };
 
               await dbAdd("tools", tool);
               setTools((p) => [...p, tool]);
             }}
 
-            /* ➕ MATERIAL */
+            /* ➕ MATERIAL – ebenfalls 1:1 übernehmen */
             onAddMaterial={async (data) => {
               const material: Material = {
                 id: crypto.randomUUID(),
-                name: data.name,
-                quantity: data.quantity ?? 0,
-                unit: data.unit ?? "",
-                shelfId: data.shelfId ?? "",
-                boxId: data.boxId ?? null,
+                ...data,
               };
               await dbAdd("materials", material);
               setMaterials((p) => [...p, material]);

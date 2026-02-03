@@ -48,12 +48,11 @@ export default function ToolForm({
     img.src = URL.createObjectURL(file);
 
     img.onload = () => {
-      const MAX_SIZE = 1024; // maximale Kantenlänge für iOS-Sicherheit
+      const MAX_SIZE = 1024;
 
       const canvas = document.createElement("canvas");
       let { width, height } = img;
 
-      // Skalierung proportional
       if (width > height) {
         if (width > MAX_SIZE) {
           height = (height * MAX_SIZE) / width;
@@ -74,9 +73,7 @@ export default function ToolForm({
 
       ctx.drawImage(img, 0, 0, width, height);
 
-      // JPEG mit 0.7 Qualität → perfekt für iOS IndexedDB
       const compressed = canvas.toDataURL("image/jpeg", 0.7);
-
       setImageUrl(compressed);
     };
   }

@@ -179,29 +179,28 @@ export default function WorkshopView({
       </div>
 
       {/* SHELF FORM */}
-{showShelfForm && (
-  <ShelfForm
-    initialShelf={initialShelf ?? undefined}
-    onSave={(shelf) => {
-      if (initialShelf) {
-        onUpdateShelf({
-          ...shelf,
-          id: initialShelf.id, // id sicherstellen
-        });
-      } else {
-        onAddShelf(shelf);
-      }
+      {showShelfForm && (
+        <ShelfForm
+          initialShelf={initialShelf ?? undefined}
+          onSave={(shelf) => {
+            if (initialShelf) {
+              onUpdateShelf({
+                ...shelf,
+                id: initialShelf.id,
+              });
+            } else {
+              onAddShelf(shelf);
+            }
 
-      setShowShelfForm(false);
-      setInitialShelf(null);
-    }}
-    onCancel={() => {
-      setShowShelfForm(false);
-      setInitialShelf(null);
-    }}
-  />
-)}
-
+            setShowShelfForm(false);
+            setInitialShelf(null);
+          }}
+          onCancel={() => {
+            setShowShelfForm(false);
+            setInitialShelf(null);
+          }}
+        />
+      )}
 
       {/* BOX FORM */}
       {showBoxForm && (
@@ -209,10 +208,7 @@ export default function WorkshopView({
           shelves={shelves}
           initialBox={initialBox ?? undefined}
           onSave={(box) => {
-            if (initialBox) {
-              // EDIT
-              // (du hast keinen onUpdateBox im Workshop, daher ignoriert)
-            } else {
+            if (!initialBox) {
               onAddBox(box);
             }
             setShowBoxForm(false);
@@ -232,11 +228,7 @@ export default function WorkshopView({
           shelves={shelves}
           boxes={boxes}
           onSave={(tool) => {
-            if (initialTool) {
-              // EDIT
-            } else {
-              onAddTool(tool);
-            }
+            onAddTool(tool);
             setShowToolForm(false);
             setInitialTool(null);
           }}
@@ -254,11 +246,7 @@ export default function WorkshopView({
           shelves={shelves}
           boxes={boxes}
           onSave={(material) => {
-            if (initialMaterial) {
-              // EDIT
-            } else {
-              onAddMaterial(material);
-            }
+            onAddMaterial(material);
             setShowMaterialForm(false);
             setInitialMaterial(null);
           }}
