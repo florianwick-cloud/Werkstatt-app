@@ -1,12 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ChangeEvent } from "react";
 import type { Tool, Shelf, Box } from "../types/models";
 
 type Props = {
   initialTool?: Tool;
-
   shelves: Shelf[];
   boxes: Box[];
-
   onSave: (tool: Tool) => void;
   onCancel: () => void;
 };
@@ -33,17 +31,20 @@ export default function ToolForm({
     initialTool?.boxId ?? null
   );
 
-  // ⭐ Bild-URL
+  // ⭐ Bild-URL (Base64)
   const [imageUrl, setImageUrl] = useState<string | null>(
     initialTool?.imageUrl ?? null
   );
 
-  function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleImageUpload(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const url = URL.createObjectURL(file);
-    setImageUrl(url);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImageUrl(reader.result as string); // Base64 dauerhaft speicherbar
+    };
+    reader.readAsDataURL(file);
   }
 
   const shelfBoxes = boxes.filter((b) => b.shelfId === selectedShelfId);
@@ -75,8 +76,6 @@ export default function ToolForm({
       description: description.trim(),
       shelfId: selectedShelfId,
       boxId: location === "box" ? selectedBoxId : null,
-
-      // ⭐ FIX: null → undefined
       imageUrl: imageUrl ?? undefined,
     });
   }
@@ -87,7 +86,7 @@ export default function ToolForm({
         padding: "1rem",
         background: "#fff",
         borderRadius: "8px",
-        border: "1px solid #ddd",
+        border: "1px solid "#ddd",
       }}
     >
       <h3 style={{ color: "#ff7a00", marginBottom: "0.75rem" }}>
