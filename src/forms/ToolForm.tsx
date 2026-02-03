@@ -37,15 +37,48 @@ export default function ToolForm({
     initialTool?.imageUrl ?? null
   );
 
-  function handleImageUpload(e: ChangeEvent<HTMLInputElement>) {
+  /* ============================================================
+     iPHONE-SICHERER BILD-UPLOADER MIT AUTOMATISCHER KOMPRESSION
+     ============================================================ */
+  async function handleImageUpload(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImageUrl(reader.result as string);
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+
+    img.onload = () => {
+      const MAX_SIZE = 1024; // maximale Kantenlänge für iOS-Sicherheit
+
+      const canvas = document.createElement("canvas");
+      let { width, height } = img;
+
+      // Skalierung proportional
+      if (width > height) {
+        if (width > MAX_SIZE) {
+          height = (height * MAX_SIZE) / width;
+          width = MAX_SIZE;
+        }
+      } else {
+        if (height > MAX_SIZE) {
+          width = (width * MAX_SIZE) / height;
+          height = MAX_SIZE;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // JPEG mit 0.7 Qualität → perfekt für iOS IndexedDB
+      const compressed = canvas.toDataURL("image/jpeg", 0.7);
+
+      setImageUrl(compressed);
     };
-    reader.readAsDataURL(file);
   }
 
   const shelfBoxes = boxes.filter((b) => b.shelfId === selectedShelfId);
