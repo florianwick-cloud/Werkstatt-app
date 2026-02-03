@@ -1,11 +1,13 @@
 import { useState, useEffect, type ChangeEvent } from "react";
 import type { Tool, Shelf, Box } from "../types/models";
 
+type ToolInput = Omit<Tool, "id">;
+
 type Props = {
   initialTool?: Tool;
   shelves: Shelf[];
   boxes: Box[];
-  onSave: (tool: Tool) => void;
+  onSave: (tool: ToolInput) => void;
   onCancel: () => void;
 };
 
@@ -31,7 +33,6 @@ export default function ToolForm({
     initialTool?.boxId ?? null
   );
 
-  // ⭐ Bild-URL (Base64)
   const [imageUrl, setImageUrl] = useState<string | null>(
     initialTool?.imageUrl ?? null
   );
@@ -42,7 +43,7 @@ export default function ToolForm({
 
     const reader = new FileReader();
     reader.onload = () => {
-      setImageUrl(reader.result as string); // Base64 dauerhaft speicherbar
+      setImageUrl(reader.result as string);
     };
     reader.readAsDataURL(file);
   }
@@ -70,14 +71,15 @@ export default function ToolForm({
     if (!selectedShelfId) return;
     if (location === "box" && !selectedBoxId) return;
 
-    onSave({
-      id: initialTool?.id ?? crypto.randomUUID(),
+    const toolInput: ToolInput = {
       name: name.trim(),
       description: description.trim(),
       shelfId: selectedShelfId,
       boxId: location === "box" ? selectedBoxId : null,
       imageUrl: imageUrl ?? undefined,
-    });
+    };
+
+    onSave(toolInput);
   }
 
   return (
@@ -86,7 +88,7 @@ export default function ToolForm({
         padding: "1rem",
         background: "#fff",
         borderRadius: "8px",
-        border: "1px solid "#ddd",
+        border: "1px solid #ddd",
       }}
     >
       <h3 style={{ color: "#ff7a00", marginBottom: "0.75rem" }}>
