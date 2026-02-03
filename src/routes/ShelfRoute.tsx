@@ -70,7 +70,9 @@ export default function ShelfRoute({
   async function onAddTool(data: Omit<Tool, "id">) {
     const newTool: Tool = {
       id: crypto.randomUUID(),
-      ...data,
+      name: data.name,
+      description: data.description ?? "",
+      imageUrl: data.imageUrl ?? null,   // ⭐ WICHTIG: Bild dauerhaft übernehmen
       shelfId: safeShelf.id,
       boxId: null, // Tools im Regal haben keine Box
     };
@@ -84,6 +86,7 @@ export default function ShelfRoute({
       ...tool,
       shelfId: safeShelf.id,
       boxId: tool.boxId ?? null,
+      imageUrl: tool.imageUrl ?? null,   // ⭐ WICHTIG: Bild nicht verlieren
     };
 
     await dbPut("tools", updated);

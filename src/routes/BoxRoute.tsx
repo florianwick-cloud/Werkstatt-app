@@ -53,7 +53,9 @@ export default function BoxRoute({
   async function onAddTool(data: Omit<Tool, "id">) {
     const newTool: Tool = {
       id: crypto.randomUUID(),
-      ...data,
+      name: data.name,
+      description: data.description ?? "",
+      imageUrl: data.imageUrl ?? null,   // ⭐ WICHTIG: Bild übernehmen
       shelfId: safeShelf.id,
       boxId: safeBox.id,
     };
@@ -78,6 +80,7 @@ export default function BoxRoute({
       ...tool,
       shelfId: safeShelf.id,
       boxId: safeBox.id,
+      imageUrl: tool.imageUrl ?? null,   // ⭐ WICHTIG: Bild nicht verlieren
     };
 
     await dbPut("tools", updated);
