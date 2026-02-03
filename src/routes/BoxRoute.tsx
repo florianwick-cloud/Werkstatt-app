@@ -31,32 +31,30 @@ export default function BoxRoute({
   const navigate = useNavigate();
   const { boxId } = useParams<{ boxId: string }>();
 
-  // Warten auf Daten
+  /* =========================
+     DATEN PRÜFEN
+     ========================= */
   if (!boxes.length || !shelves.length) {
     return <div style={{ padding: "1rem" }}>Lade Daten…</div>;
   }
 
-  // Box suchen
   const box = boxes.find((b) => b.id === boxId);
-  if (!box) {
-    return <div style={{ padding: "1rem" }}>Kiste nicht gefunden</div>;
-  }
+  if (!box) return <div style={{ padding: "1rem" }}>Kiste nicht gefunden</div>;
 
-  // Shelf suchen
   const shelf = shelves.find((s) => s.id === box.shelfId);
-  if (!shelf) {
-    return <div style={{ padding: "1rem" }}>Regal nicht gefunden</div>;
-  }
+  if (!shelf) return <div style={{ padding: "1rem" }}>Regal nicht gefunden</div>;
 
-  // Ab hier sind box & shelf garantiert definiert
   const safeBox = box;
   const safeShelf = shelf;
 
-  async function onAddTool(tool: Omit<Tool, "id">) {
+  /* =========================
+     TOOL: ADD
+     ========================= */
+  async function onAddTool(data: Omit<Tool, "id">) {
     const newTool: Tool = {
       id: crypto.randomUUID(),
-      ...tool,
-      shelfId: safeBox.shelfId,
+      ...data,
+      shelfId: safeShelf.id,
       boxId: safeBox.id,
     };
 
@@ -64,20 +62,37 @@ export default function BoxRoute({
     setTools((prev) => [...prev, newTool]);
   }
 
+  /* =========================
+     TOOL: DELETE
+     ========================= */
   async function onDeleteTool(id: string) {
     await dbDelete("tools", id);
     setTools((prev) => prev.filter((t) => t.id !== id));
   }
 
+  /* =========================
+     TOOL: EDIT
+     ========================= */
   async function onEditTool(tool: Tool) {
-    await dbPut("tools", tool);
-    setTools((prev) => prev.map((t) => (t.id === tool.id ? tool : t)));
+    const updated: Tool = {
+      ...tool,
+      shelfId: safeShelf.id,
+      boxId: safeBox.id,
+    };
+
+    await dbPut("tools", updated);
+    setTools((prev) =>
+      prev.map((t) => (t.id === updated.id ? updated : t))
+    );
   }
 
-  async function onAddMaterial(material: Omit<Material, "id">) {
+  /* =========================
+     MATERIAL: ADD
+     ========================= */
+  async function onAddMaterial(data: Omit<Material, "id">) {
     const newMaterial: Material = {
       id: crypto.randomUUID(),
-      ...material,
+      ...data,
       shelfId: safeShelf.id,
       boxId: safeBox.id,
     };
@@ -86,18 +101,33 @@ export default function BoxRoute({
     setMaterials((prev) => [...prev, newMaterial]);
   }
 
+  /* =========================
+     MATERIAL: DELETE
+     ========================= */
   async function onDeleteMaterial(id: string) {
     await dbDelete("materials", id);
     setMaterials((prev) => prev.filter((m) => m.id !== id));
   }
 
+  /* =========================
+     MATERIAL: EDIT
+     ========================= */
   async function onEditMaterial(material: Material) {
-    await dbPut("materials", material);
+    const updated: Material = {
+      ...material,
+      shelfId: safeShelf.id,
+      boxId: safeBox.id,
+    };
+
+    await dbPut("materials", updated);
     setMaterials((prev) =>
-      prev.map((m) => (m.id === material.id ? material : m))
+      prev.map((m) => (m.id === updated.id ? updated : m))
     );
   }
 
+  /* =========================
+     RENDER
+     ========================= */
   return (
     <BoxView
       shelf={safeShelf}

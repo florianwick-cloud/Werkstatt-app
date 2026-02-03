@@ -36,11 +36,18 @@ export default function ShelfRoute({
   const shelf = shelves.find((s) => s.id === shelfId);
   if (!shelf) return null;
 
-  /* -------------------------
+  const safeShelf = shelf;
+
+  /* =========================
      BOXEN
-  ------------------------- */
+     ========================= */
   async function onAddBox(name: string, shelfId: string) {
-    const box: Box = { id: crypto.randomUUID(), name, shelfId };
+    const box: Box = {
+      id: crypto.randomUUID(),
+      name,
+      shelfId,
+    };
+
     await dbAdd("boxes", box);
     setBoxes((prev) => [...prev, box]);
   }
@@ -57,18 +64,32 @@ export default function ShelfRoute({
     setBoxes((prev) => prev.filter((b) => b.id !== id));
   }
 
-  /* -------------------------
+  /* =========================
      WERKZEUGE
-  ------------------------- */
-  async function onAddTool(tool: Omit<Tool, "id">) {
-    const newTool: Tool = { id: crypto.randomUUID(), ...tool };
+     ========================= */
+  async function onAddTool(data: Omit<Tool, "id">) {
+    const newTool: Tool = {
+      id: crypto.randomUUID(),
+      ...data,
+      shelfId: safeShelf.id,
+      boxId: null, // Tools im Regal haben keine Box
+    };
+
     await dbAdd("tools", newTool);
     setTools((prev) => [...prev, newTool]);
   }
 
   async function onEditTool(tool: Tool) {
-    await dbPut("tools", tool);
-    setTools((prev) => prev.map((t) => (t.id === tool.id ? tool : t)));
+    const updated: Tool = {
+      ...tool,
+      shelfId: safeShelf.id,
+      boxId: tool.boxId ?? null,
+    };
+
+    await dbPut("tools", updated);
+    setTools((prev) =>
+      prev.map((t) => (t.id === updated.id ? updated : t))
+    );
   }
 
   async function onDeleteTool(id: string) {
@@ -76,19 +97,31 @@ export default function ShelfRoute({
     setTools((prev) => prev.filter((t) => t.id !== id));
   }
 
-  /* -------------------------
+  /* =========================
      MATERIAL
-  ------------------------- */
-  async function onAddMaterial(material: Omit<Material, "id">) {
-    const newMaterial: Material = { id: crypto.randomUUID(), ...material };
+     ========================= */
+  async function onAddMaterial(data: Omit<Material, "id">) {
+    const newMaterial: Material = {
+      id: crypto.randomUUID(),
+      ...data,
+      shelfId: safeShelf.id,
+      boxId: null,
+    };
+
     await dbAdd("materials", newMaterial);
     setMaterials((prev) => [...prev, newMaterial]);
   }
 
   async function onEditMaterial(material: Material) {
-    await dbPut("materials", material);
+    const updated: Material = {
+      ...material,
+      shelfId: safeShelf.id,
+      boxId: material.boxId ?? null,
+    };
+
+    await dbPut("materials", updated);
     setMaterials((prev) =>
-      prev.map((m) => (m.id === material.id ? material : m))
+      prev.map((m) => (m.id === updated.id ? updated : m))
     );
   }
 
@@ -97,13 +130,16 @@ export default function ShelfRoute({
     setMaterials((prev) => prev.filter((m) => m.id !== id));
   }
 
+  /* =========================
+     RENDER
+     ========================= */
   return (
     <ShelfView
-      shelf={shelf}
+      shelf={safeShelf}
       shelves={shelves}
-      boxes={boxes}
-      tools={tools}
-      materials={materials}
+      boxes={boxes.filter((b) => b.shelfId === safeShelf.id)}
+      tools={tools.filter((t) => t.shelfId === safeShelf.id)}
+      materials={materials.filter((m) => m.shelfId === safeShelf.id)}
       onBack={() => navigate("/")}
 
       onAddBox={onAddBox}

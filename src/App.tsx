@@ -128,7 +128,7 @@ export default function App() {
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             searchResults={searchResults}
-
+            
             /* ➕ REGAL */
             onAddShelf={async (data) => {
               const shelf: Shelf = {
@@ -150,14 +150,17 @@ export default function App() {
               setBoxes((p) => [...p, box]);
             }}
 
-            /* ➕ WERKZEUG */
+            /* ➕ WERKZEUG – jetzt mit allen Feldern inkl. imageUrl */
             onAddTool={async (data) => {
               const tool: Tool = {
                 id: crypto.randomUUID(),
                 name: data.name,
-                shelfId: "",
-                boxId: "",
+                description: data.description ?? "",
+                shelfId: data.shelfId ?? "",
+                boxId: data.boxId ?? null,
+                imageUrl: data.imageUrl, // ⭐ wichtig für Bilder
               };
+
               await dbAdd("tools", tool);
               setTools((p) => [...p, tool]);
             }}
@@ -167,10 +170,10 @@ export default function App() {
               const material: Material = {
                 id: crypto.randomUUID(),
                 name: data.name,
-                quantity: 0,
-                unit: "",
-                shelfId: "",
-                boxId: "",
+                quantity: data.quantity ?? 0,
+                unit: data.unit ?? "",
+                shelfId: data.shelfId ?? "",
+                boxId: data.boxId ?? null,
               };
               await dbAdd("materials", material);
               setMaterials((p) => [...p, material]);
