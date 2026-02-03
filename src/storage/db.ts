@@ -3,7 +3,7 @@
 import type { Shelf, Box, Tool, Material } from "../types/models";
 
 const DB_NAME = "workshop-db";
-const DB_VERSION = 1;
+const DB_VERSION = 2; // ⭐ Wichtig: Version erhöht, damit Upgrade ausgeführt wird
 
 export function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -17,23 +17,32 @@ export function openDB(): Promise<IDBDatabase> {
       resolve(request.result);
     };
 
-    request.onupgradeneeded = () => {
+    request.onupgradeneeded = (event) => {
       const db = request.result;
+      const oldVersion = event.oldVersion;
 
-      if (!db.objectStoreNames.contains("shelves")) {
-        db.createObjectStore("shelves", { keyPath: "id" });
-      }
-
-      if (!db.objectStoreNames.contains("boxes")) {
-        db.createObjectStore("boxes", { keyPath: "id" });
-      }
-
-      if (!db.objectStoreNames.contains("tools")) {
+      // ============================
+      // UPGRADE: Version 1 → 2
+      // ============================
+      if (oldVersion < 2) {
+        // Tools-Store neu anlegen, damit imageUrl sicher gespeichert wird
+        if (db.objectStoreNames.contains("tools")) {
+          db.deleteObjectStore("tools");
+        }
         db.createObjectStore("tools", { keyPath: "id" });
-      }
 
-      if (!db.objectStoreNames.contains("materials")) {
-        db.createObjectStore("materials", { keyPath: "id" });
+        // Andere Stores nur anlegen, falls sie fehlen
+        if (!db.objectStoreNames.contains("shelves")) {
+          db.createObjectStore("shelves", { keyPath: "id" });
+        }
+
+        if (!db.objectStoreNames.contains("boxes")) {
+          db.createObjectStore("boxes", { keyPath: "id" });
+        }
+
+        if (!db.objectStoreNames.contains("materials")) {
+          db.createObjectStore("materials", { keyPath: "id" });
+        }
       }
     };
   });
