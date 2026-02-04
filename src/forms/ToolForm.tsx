@@ -1,7 +1,12 @@
 import { useState, useEffect, type ChangeEvent } from "react";
 import type { Tool, Shelf, Box } from "../types/models";
 
-type ToolInput = Omit<Tool, "id" | "imageId" | "imageUrl"> & {
+type ToolInput = {
+  id?: string;
+  name: string;
+  description?: string;
+  shelfId: string;
+  boxId: string | null;
   imageId?: string;
 };
 
@@ -35,21 +40,12 @@ export default function ToolForm({
     initialTool?.boxId ?? null
   );
 
-  /* ============================================================
-     Bild-Preview (Object URL)
-     ============================================================ */
   const [imageUrl, setImageUrl] = useState<string | null>(
     initialTool?.imageUrl ?? null
   );
 
-  /* ============================================================
-     Der WICHTIGE neue State: Blob für iOS-sichere Speicherung
-     ============================================================ */
   const [imageBlob, setImageBlob] = useState<Blob | null>(null);
 
-  /* ============================================================
-     iPHONE-SICHERER BILD-UPLOADER MIT AUTOMATISCHER KOMPRESSION
-     ============================================================ */
   async function handleImageUpload(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -83,19 +79,16 @@ export default function ToolForm({
 
       ctx.drawImage(img, 0, 0, width, height);
 
-      /* WICHTIG: Jetzt als Blob speichern, nicht Base64 */
       canvas.toBlob(
         (blob) => {
           if (!blob) return;
 
-          // Sicherstellen, dass der Blob einen MIME-Type hat
           const jpegBlob = blob.type
             ? blob
             : new Blob([blob], { type: "image/jpeg" });
 
           setImageBlob(jpegBlob);
 
-          /* Preview erzeugen */
           const url = URL.createObjectURL(jpegBlob);
           setImageUrl(url);
         },
@@ -105,9 +98,6 @@ export default function ToolForm({
     };
   }
 
-  /* ============================================================
-     Shelf/Box Logik
-     ============================================================ */
   const shelfBoxes = boxes.filter((b) => b.shelfId === selectedShelfId);
 
   useEffect(() => {
@@ -126,37 +116,25 @@ export default function ToolForm({
     }
   }, [location, selectedShelfId, shelfBoxes]);
 
-  /* ============================================================
-     SPEICHERN
-     ============================================================ */
   function handleSubmit() {
     if (!name.trim()) return;
     if (!selectedShelfId) return;
     if (location === "box" && !selectedBoxId) return;
 
     const toolInput: ToolInput = {
+      id: initialTool?.id,
       name: name.trim(),
       description: description.trim(),
       shelfId: selectedShelfId,
       boxId: location === "box" ? selectedBoxId : null,
-      imageId: initialTool?.imageId, // wird in App.tsx überschrieben, falls neues Bild
+      imageId: initialTool?.imageId,
     };
 
     onSave(toolInput, imageBlob);
   }
 
-  /* ============================================================
-     UI
-     ============================================================ */
   return (
-    <div
-      style={{
-        padding: "1rem",
-        background: "#fff",
-        borderRadius: "8px",
-        border: "1px solid #ddd",
-      }}
-    >
+    <div style={{ padding: "1rem", background: "#fff", borderRadius: "8px", border: "1px solid #ddd" }}>
       <h3 style={{ color: "#ff7a00", marginBottom: "0.75rem" }}>
         {initialTool ? "Werkzeug bearbeiten" : "Werkzeug hinzufügen"}
       </h3>
@@ -249,13 +227,7 @@ export default function ToolForm({
 
       {/* BILD-UPLOADER */}
       <div style={{ marginBottom: "0.75rem" }}>
-        <label
-          style={{
-            display: "block",
-            marginBottom: "0.25rem",
-            fontWeight: 600,
-          }}
-        >
+        <label style={{ display: "block", marginBottom: "0.25rem", fontWeight: 600 }}>
           Foto
         </label>
 

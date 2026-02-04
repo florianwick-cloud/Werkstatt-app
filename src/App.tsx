@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 
-/* 🔍 Global Search */
 import { searchAll } from "./utils/search";
 import type { SearchResult } from "./utils/search";
 
-/* 💾 IndexedDB */
 import { openDB } from "./storage/db";
 
 import WorkshopView from "./views/WorkshopView";
@@ -15,10 +13,6 @@ import BoxRoute from "./routes/BoxRoute";
 import type { Shelf, Box, Tool, Material } from "./types/models";
 import type { DbAdd, DbPut, DbDelete } from "./types/db";
 
-/* ============================================================
-   APP ROOT
-   ============================================================ */
-
 export default function App() {
   const [shelves, setShelves] = useState<Shelf[]>([]);
   const [boxes, setBoxes] = useState<Box[]>([]);
@@ -27,13 +21,9 @@ export default function App() {
 
   const [isLoaded, setIsLoaded] = useState(false);
 
-  /* 🔍 Suche */
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 
-  /* ============================================================
-     LOAD FROM INDEXEDDB (inkl. Bilder)
-     ============================================================ */
   useEffect(() => {
     let isCancelled = false;
 
@@ -50,18 +40,17 @@ export default function App() {
 
       const shelves = await readAll<Shelf>("shelves");
       const boxes = await readAll<Box>("boxes");
-      const tools = await readAll<Tool>("tools");
+      const toolsRaw = await readAll<Tool>("tools");
       const materials = await readAll<Material>("materials");
 
-      /* Bilder laden */
       const imageStore = db.transaction("images", "readonly").objectStore("images");
 
       const toolsWithImages = await Promise.all(
-        tools.map(
+        toolsRaw.map(
           (tool) =>
             new Promise<Tool>((resolve) => {
               if (!tool.imageId) {
-                resolve(tool);
+                resolve({ ...tool, imageId: tool.imageId });
                 return;
               }
 
@@ -73,16 +62,22 @@ export default function App() {
                   const url = URL.createObjectURL(value);
                   resolve({
                     ...tool,
+                    imageId: tool.imageId,
                     imageUrl: url,
                   });
                 } else {
                   resolve({
                     ...tool,
+                    imageId: tool.imageId,
                     imageUrl: undefined,
                   });
                 }
               };
-              req.onerror = () => resolve(tool);
+              req.onerror = () =>
+                resolve({
+                  ...tool,
+                  imageId: tool.imageId,
+                });
             })
         )
       );
@@ -99,19 +94,14 @@ export default function App() {
 
     load();
 
-    // Cleanup: ObjectURLs aufräumen, wenn App unmountet oder neu lädt
     return () => {
       isCancelled = true;
       tools.forEach((t) => {
         if (t.imageUrl) URL.revokeObjectURL(t.imageUrl);
       });
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* ============================================================
-     GLOBALE SUCHE
-     ============================================================ */
   useEffect(() => {
     if (!searchQuery.trim()) {
       setSearchResults([]);
@@ -129,9 +119,6 @@ export default function App() {
     );
   }, [searchQuery, shelves, boxes, tools, materials]);
 
-  /* ============================================================
-     HELPERS
-     ============================================================ */
   async function dbAdd(store: string, value: any) {
     const db = await openDB();
     db.transaction(store, "readwrite").objectStore(store).add(value);
@@ -147,16 +134,10 @@ export default function App() {
     db.transaction(store, "readwrite").objectStore(store).delete(id);
   }
 
-  /* ============================================================
-     WICHTIG: Keine Routen bevor Daten geladen sind
-     ============================================================ */
   if (!isLoaded) return null;
 
   return (
     <Routes>
-      {/* ============================================================
-          WORKSHOP ROOT
-         ============================================================ */}
       <Route
         path="/"
         element={
@@ -168,8 +149,6 @@ export default function App() {
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             searchResults={searchResults}
-            
-            /* ➕ REGAL */
             onAddShelf={async (data) => {
               const shelf: Shelf = {
                 id: crypto.randomUUID(),
@@ -178,8 +157,6 @@ export default function App() {
               await dbAdd("shelves", shelf);
               setShelves((p) => [...p, shelf]);
             }}
-
-            /* ➕ KISTE */
             onAddBox={async (data) => {
               const box: Box = {
                 id: crypto.randomUUID(),
@@ -189,8 +166,6 @@ export default function App() {
               await dbAdd("boxes", box);
               setBoxes((p) => [...p, box]);
             }}
-
-            /* ➕ WERKZEUG */
             onAddTool={async (data, imageBlob) => {
               const id = crypto.randomUUID();
 
@@ -220,8 +195,6 @@ export default function App() {
                 },
               ]);
             }}
-
-            /* ➕ MATERIAL */
             onAddMaterial={async (data) => {
               const material: Material = {
                 id: crypto.randomUUID(),
@@ -230,8 +203,6 @@ export default function App() {
               await dbAdd("materials", material);
               setMaterials((p) => [...p, material]);
             }}
-
-            /* ✏️ REGAL UPDATE */
             onUpdateShelf={async (shelf) => {
               setShelves((prev) =>
                 prev.map((s) => {
@@ -241,8 +212,6 @@ export default function App() {
                 })
               );
             }}
-
-            /* 🗑 REGAL DELETE */
             onDeleteShelf={async (id) => {
               await dbDelete("shelves", id);
               setShelves((p) => p.filter((s) => s.id !== id));
@@ -251,9 +220,6 @@ export default function App() {
         }
       />
 
-      {/* ============================================================
-          SHELF ROUTE
-         ============================================================ */}
       <Route
         path="/shelf/:shelfId"
         element={
@@ -272,9 +238,6 @@ export default function App() {
         }
       />
 
-      {/* ============================================================
-          BOX ROUTE
-         ============================================================ */}
       <Route
         path="/box/:boxId"
         element={

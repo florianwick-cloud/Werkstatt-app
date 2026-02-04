@@ -99,7 +99,6 @@ export default function BoxRoute({
 
     const db = await openDB();
 
-    // Bild ersetzen
     if (imageBlob) {
       db.transaction("images", "readwrite")
         .objectStore("images")

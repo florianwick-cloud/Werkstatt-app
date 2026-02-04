@@ -29,7 +29,7 @@ export type Tool = {
   // 🔥 Entscheidend für Bild-Persistenz in IndexedDB
   imageId?: string;
 
-  // ⭐ Wird nur im UI genutzt (Object URL)
+  // 🔥 UI-Preview (Object URL)
   imageUrl?: string;
 
   shelfId: string;
@@ -46,7 +46,6 @@ export type Material = {
   quantity: number;
   unit: string;
 
-  // ⭐ Optional: falls du Material-Bilder willst
   imageUrl?: string;
 
   shelfId: string;

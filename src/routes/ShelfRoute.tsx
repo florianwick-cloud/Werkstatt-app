@@ -39,9 +39,6 @@ export default function ShelfRoute({
 
   const safeShelf = shelf;
 
-  /* =========================
-     BOXEN
-     ========================= */
   async function onAddBox(name: string, shelfId: string) {
     const box: Box = {
       id: crypto.randomUUID(),
@@ -64,10 +61,6 @@ export default function ShelfRoute({
     await dbDelete("boxes", id);
     setBoxes((prev) => prev.filter((b) => b.id !== id));
   }
-
-  /* =========================
-     WERKZEUGE (NEU: MIT BILD)
-     ========================= */
 
   async function onAddTool(toolInput: any, imageBlob: Blob | null) {
     const id = crypto.randomUUID();
@@ -114,7 +107,6 @@ export default function ShelfRoute({
 
     const db = await openDB();
 
-    // Bild ersetzen
     if (imageBlob) {
       db.transaction("images", "readwrite")
         .objectStore("images")
@@ -151,9 +143,6 @@ export default function ShelfRoute({
     setTools((prev) => prev.filter((t) => t.id !== id));
   }
 
-  /* =========================
-     MATERIAL
-     ========================= */
   async function onAddMaterial(data: Omit<Material, "id">) {
     const newMaterial: Material = {
       id: crypto.randomUUID(),
@@ -184,9 +173,6 @@ export default function ShelfRoute({
     setMaterials((prev) => prev.filter((m) => m.id !== id));
   }
 
-  /* =========================
-     RENDER
-     ========================= */
   return (
     <ShelfView
       shelf={safeShelf}
@@ -195,15 +181,12 @@ export default function ShelfRoute({
       tools={tools.filter((t) => t.shelfId === safeShelf.id)}
       materials={materials.filter((m) => m.shelfId === safeShelf.id)}
       onBack={() => navigate("/")}
-
       onAddBox={onAddBox}
       onEditBox={onEditBox}
       onDeleteBox={onDeleteBox}
-
       onAddTool={onAddTool}
       onEditTool={onEditTool}
       onDeleteTool={onDeleteTool}
-
       onAddMaterial={onAddMaterial}
       onEditMaterial={onEditMaterial}
       onDeleteMaterial={onDeleteMaterial}
