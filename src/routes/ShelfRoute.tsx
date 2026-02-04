@@ -2,6 +2,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import type { Shelf, Box, Tool, Material } from "../types/models";
 import type { DbAdd, DbPut, DbDelete } from "../types/db";
 import ShelfView from "../components/ShelfView/ShelfView";
+import { openDB } from "../storage/db";
 
 type ShelfRouteProps = {
   shelves: Shelf[];
@@ -65,37 +66,87 @@ export default function ShelfRoute({
   }
 
   /* =========================
-     WERKZEUGE
+     WERKZEUGE (NEU: MIT BILD)
      ========================= */
-  async function onAddTool(data: Omit<Tool, "id">) {
-    const newTool: Tool = {
-      id: crypto.randomUUID(),
-      name: data.name,
-      description: data.description ?? "",
-      imageUrl: data.imageUrl ?? null,   // ⭐ WICHTIG: Bild dauerhaft übernehmen
+
+  async function onAddTool(toolInput: any, imageBlob: Blob | null) {
+    const id = crypto.randomUUID();
+
+    const tool: Tool = {
+      id,
+      name: toolInput.name,
+      description: toolInput.description ?? "",
       shelfId: safeShelf.id,
-      boxId: null, // Tools im Regal haben keine Box
+      boxId: null,
+      imageId: imageBlob ? id : undefined,
     };
 
-    await dbAdd("tools", newTool);
-    setTools((prev) => [...prev, newTool]);
+    await dbAdd("tools", tool);
+
+    if (imageBlob) {
+      const db = await openDB();
+      db.transaction("images", "readwrite")
+        .objectStore("images")
+        .put(imageBlob, id);
+    }
+
+    setTools((prev) => [
+      ...prev,
+      {
+        ...tool,
+        imageUrl: imageBlob ? URL.createObjectURL(imageBlob) : undefined,
+      },
+    ]);
   }
 
-  async function onEditTool(tool: Tool) {
+  async function onEditTool(toolInput: any, imageBlob: Blob | null) {
+    const oldTool = tools.find((t) => t.id === toolInput.id);
+    if (!oldTool) return;
+
     const updated: Tool = {
-      ...tool,
+      ...oldTool,
+      name: toolInput.name,
+      description: toolInput.description ?? "",
       shelfId: safeShelf.id,
-      boxId: tool.boxId ?? null,
-      imageUrl: tool.imageUrl ?? null,   // ⭐ WICHTIG: Bild nicht verlieren
+      boxId: null,
+      imageId: oldTool.imageId ?? (imageBlob ? oldTool.id : undefined),
     };
 
+    const db = await openDB();
+
+    // Bild ersetzen
+    if (imageBlob) {
+      db.transaction("images", "readwrite")
+        .objectStore("images")
+        .put(imageBlob, updated.id);
+    }
+
     await dbPut("tools", updated);
+
     setTools((prev) =>
-      prev.map((t) => (t.id === updated.id ? updated : t))
+      prev.map((t) =>
+        t.id === updated.id
+          ? {
+              ...updated,
+              imageUrl: imageBlob
+                ? URL.createObjectURL(imageBlob)
+                : t.imageUrl,
+            }
+          : t
+      )
     );
   }
 
   async function onDeleteTool(id: string) {
+    const tool = tools.find((t) => t.id === id);
+
+    if (tool?.imageId) {
+      const db = await openDB();
+      db.transaction("images", "readwrite")
+        .objectStore("images")
+        .delete(tool.imageId);
+    }
+
     await dbDelete("tools", id);
     setTools((prev) => prev.filter((t) => t.id !== id));
   }

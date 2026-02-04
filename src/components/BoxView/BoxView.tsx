@@ -23,8 +23,9 @@ type Props = {
 
   onBack: () => void;
 
-  onAddTool: (tool: Omit<Tool, "id">) => void;
-  onEditTool: (tool: Tool) => void;
+  // ⭐ Neue Signatur: ToolInput + imageBlob
+  onAddTool: (toolInput: any, imageBlob: Blob | null) => void;
+  onEditTool: (toolInput: any, imageBlob: Blob | null) => void;
   onDeleteTool: (id: string) => void;
 
   onAddMaterial: (material: Omit<Material, "id">) => void;
@@ -87,17 +88,15 @@ export default function BoxView({
         onAddMaterial={handleAddMaterial}
       />
 
-      {/* SUCHFELD + QR-SCANNER + QR-CODE BUTTON (wie WorkshopView/ShelfView) */}
+      {/* SUCHFELD + QR-SCANNER + QR-CODE BUTTON */}
       <div className="flex items-center gap-2 px-4 py-3 bg-orange-50 border-b border-orange-200">
 
-        {/* Suchfeld */}
         <input
           type="text"
           placeholder="In dieser Box suchen…"
           className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
         />
 
-        {/* QR‑Scanner */}
         <button
           onClick={() => setShowQRScanner(true)}
           className="w-10 h-10 flex items-center justify-center bg-orange-500 text-white rounded-md hover:bg-orange-600 transition"
@@ -114,7 +113,6 @@ export default function BoxView({
           </svg>
         </button>
 
-        {/* QR‑Code für Box */}
         <button
           onClick={() => setShowQR(true)}
           className="px-3 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition text-sm font-semibold whitespace-nowrap"
@@ -147,18 +145,14 @@ export default function BoxView({
       {/* QR SCANNER */}
       {showQRScanner && (
         <QRScanner
-        onScan={(value) => {
-       setShowQRScanner(false);
-
-      const id = value.includes(":") ? value.split(":")[1] : value;
-
-      window.location.href = `#/box/${id}`;
-    }}
-    onClose={() => setShowQRScanner(false)}
-  />
-)}
-
-
+          onScan={(value) => {
+            setShowQRScanner(false);
+            const id = value.includes(":") ? value.split(":")[1] : value;
+            window.location.href = `#/box/${id}`;
+          }}
+          onClose={() => setShowQRScanner(false)}
+        />
+      )}
 
       {/* TOOL FORM */}
       {showToolForm && (
@@ -166,9 +160,12 @@ export default function BoxView({
           initialTool={initialTool ?? undefined}
           shelves={shelves}
           boxes={boxes}
-          onSave={(tool) => {
-            if (initialTool) onEditTool(tool);
-            else onAddTool(tool);
+          onSave={(toolInput, imageBlob) => {
+            if (initialTool) {
+              onEditTool(toolInput, imageBlob);
+            } else {
+              onAddTool(toolInput, imageBlob);
+            }
 
             setShowToolForm(false);
             setInitialTool(null);
@@ -200,7 +197,7 @@ export default function BoxView({
         />
       )}
 
-      {/* CONTENT WRAPPER – wie WorkshopView/ShelfView */}
+      {/* CONTENT */}
       <div className="p-4">
 
         <BoxTools

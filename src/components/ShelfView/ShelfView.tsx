@@ -26,8 +26,9 @@ type Props = {
   onEditBox: (box: Box) => void;
   onDeleteBox: (id: string) => void;
 
-  onAddTool: (tool: Omit<Tool, "id">) => void;
-  onEditTool: (tool: Tool) => void;
+  // ⭐ NEUE SIGNATUR: ToolInput + imageBlob
+  onAddTool: (toolInput: any, imageBlob: Blob | null) => void;
+  onEditTool: (toolInput: any, imageBlob: Blob | null) => void;
   onDeleteTool: (id: string) => void;
 
   onAddMaterial: (material: Omit<Material, "id">) => void;
@@ -103,17 +104,15 @@ export default function ShelfView({
         onAddTool={handleAddTool}
       />
 
-      {/* SUCHFELD + QR-SCANNER + QR-CODE BUTTON (wie WorkshopView) */}
+      {/* SUCHFELD + QR-SCANNER + QR-CODE BUTTON */}
       <div className="flex items-center gap-2 px-4 py-3 bg-orange-50 border-b border-orange-200">
 
-        {/* Suchfeld */}
         <input
           type="text"
           placeholder="In diesem Regal suchen…"
           className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
         />
 
-        {/* QR‑Scanner */}
         <button
           onClick={() => setShowQRScanner(true)}
           className="w-10 h-10 flex items-center justify-center bg-orange-500 text-white rounded-md hover:bg-orange-600 transition"
@@ -130,7 +129,6 @@ export default function ShelfView({
           </svg>
         </button>
 
-        {/* QR‑Code für Regal */}
         <button
           onClick={() => setShowQR(true)}
           className="px-3 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition text-sm font-semibold whitespace-nowrap"
@@ -163,17 +161,13 @@ export default function ShelfView({
       {/* QR SCANNER */}
       {showQRScanner && (
         <QRScanner
-  onScan={(value) => {
-         setShowQRScanner(false);
-
-         // QR-Code-Format: "box:<id>"
-         const id = value.includes(":") ? value.split(":")[1] : value;
-
-        window.location.href = `#/shelf/${id}`;
-        }}
-           onClose={() => setShowQRScanner(false)}
-          />
-
+          onScan={(value) => {
+            setShowQRScanner(false);
+            const id = value.includes(":") ? value.split(":")[1] : value;
+            window.location.href = `#/shelf/${id}`;
+          }}
+          onClose={() => setShowQRScanner(false)}
+        />
       )}
 
       {/* BOX FORM */}
@@ -201,9 +195,12 @@ export default function ShelfView({
           initialTool={initialTool ?? undefined}
           shelves={shelves}
           boxes={boxes}
-          onSave={(tool) => {
-            if (initialTool) onEditTool(tool);
-            else onAddTool(tool);
+          onSave={(toolInput, imageBlob) => {
+            if (initialTool) {
+              onEditTool(toolInput, imageBlob);
+            } else {
+              onAddTool(toolInput, imageBlob);
+            }
 
             setShowToolForm(false);
             setInitialTool(null);
@@ -235,7 +232,7 @@ export default function ShelfView({
         />
       )}
 
-      {/* CONTENT WRAPPER – wie WorkshopView */}
+      {/* CONTENT */}
       <div className="p-4">
 
         <ShelfInfo
@@ -256,7 +253,7 @@ export default function ShelfView({
           shelf={shelf}
           shelves={shelves}
           boxes={boxes}
-          onAddTool={onAddTool}
+          onAddTool={handleAddTool}
           onEditTool={(tool: Tool) => {
             setInitialTool(tool);
             setShowToolForm(true);
