@@ -26,11 +26,14 @@ export type Tool = {
   name: string;
   description?: string;
 
-  // ⭐ Wichtig: UI erwartet imageUrl
+  // 🔥 Entscheidend für Bild-Persistenz in IndexedDB
+  imageId?: string;
+
+  // ⭐ Wird nur im UI genutzt (Object URL)
   imageUrl?: string;
 
   shelfId: string;
-  boxId: string | null; // bleibt korrekt
+  boxId: string | null;
 };
 
 /* =========================
