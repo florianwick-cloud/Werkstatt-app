@@ -35,6 +35,8 @@ export default function App() {
      LOAD FROM INDEXEDDB (inkl. Bilder)
      ============================================================ */
   useEffect(() => {
+    let isCancelled = false;
+
     async function load() {
       const db = await openDB();
 
@@ -55,22 +57,37 @@ export default function App() {
       const imageStore = db.transaction("images", "readonly").objectStore("images");
 
       const toolsWithImages = await Promise.all(
-        tools.map(async (tool) => {
-          if (!tool.imageId) return tool;
+        tools.map(
+          (tool) =>
+            new Promise<Tool>((resolve) => {
+              if (!tool.imageId) {
+                resolve(tool);
+                return;
+              }
 
-          return new Promise<Tool>((resolve) => {
-            const req = imageStore.get(tool.imageId);
-            req.onsuccess = () => {
-              const blob = req.result as Blob | undefined;
-              resolve({
-                ...tool,
-                imageUrl: blob ? URL.createObjectURL(blob) : undefined,
-              });
-            };
-            req.onerror = () => resolve(tool);
-          });
-        })
+              const req = imageStore.get(tool.imageId);
+              req.onsuccess = () => {
+                const value = req.result;
+
+                if (value instanceof Blob) {
+                  const url = URL.createObjectURL(value);
+                  resolve({
+                    ...tool,
+                    imageUrl: url,
+                  });
+                } else {
+                  resolve({
+                    ...tool,
+                    imageUrl: undefined,
+                  });
+                }
+              };
+              req.onerror = () => resolve(tool);
+            })
+        )
       );
+
+      if (isCancelled) return;
 
       setShelves(shelves);
       setBoxes(boxes);
@@ -81,6 +98,15 @@ export default function App() {
     }
 
     load();
+
+    // Cleanup: ObjectURLs aufräumen, wenn App unmountet oder neu lädt
+    return () => {
+      isCancelled = true;
+      tools.forEach((t) => {
+        if (t.imageUrl) URL.revokeObjectURL(t.imageUrl);
+      });
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /* ============================================================

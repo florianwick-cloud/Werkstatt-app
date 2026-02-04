@@ -3,7 +3,7 @@
 import type { Shelf, Box, Tool, Material } from "../types/models";
 
 const DB_NAME = "workshop-db";
-const DB_VERSION = 3; // ⭐ Version erhöht, damit images-Store angelegt wird
+const DB_VERSION = 4; // ⭐ Version erhöht, damit images-Store sauber neu angelegt wird
 
 export function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -48,9 +48,19 @@ export function openDB(): Promise<IDBDatabase> {
       // ============================================================
       if (oldVersion < 3) {
         if (!db.objectStoreNames.contains("images")) {
-          db.createObjectStore("images"); 
+          db.createObjectStore("images");
           // kein keyPath → wir speichern Blobs unter custom keys (toolId)
         }
+      }
+
+      // ============================================================
+      // UPGRADE: Version 3 → 4 (images-Store sauber neu anlegen)
+      // ============================================================
+      if (oldVersion < 4) {
+        if (db.objectStoreNames.contains("images")) {
+          db.deleteObjectStore("images");
+        }
+        db.createObjectStore("images");
       }
     };
   });

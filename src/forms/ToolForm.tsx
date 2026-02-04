@@ -88,10 +88,15 @@ export default function ToolForm({
         (blob) => {
           if (!blob) return;
 
-          setImageBlob(blob);
+          // Sicherstellen, dass der Blob einen MIME-Type hat
+          const jpegBlob = blob.type
+            ? blob
+            : new Blob([blob], { type: "image/jpeg" });
+
+          setImageBlob(jpegBlob);
 
           /* Preview erzeugen */
-          const url = URL.createObjectURL(blob);
+          const url = URL.createObjectURL(jpegBlob);
           setImageUrl(url);
         },
         "image/jpeg",
