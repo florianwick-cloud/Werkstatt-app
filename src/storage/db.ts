@@ -3,7 +3,7 @@
 import type { Shelf, Box, Tool, Material } from "../types/models";
 
 const DB_NAME = "workshop-db";
-const DB_VERSION = 2; // ⭐ Wichtig: Version erhöht, damit Upgrade ausgeführt wird
+const DB_VERSION = 3; // ⭐ Version erhöht, damit images-Store angelegt wird
 
 export function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -21,17 +21,15 @@ export function openDB(): Promise<IDBDatabase> {
       const db = request.result;
       const oldVersion = event.oldVersion;
 
-      // ============================
-      // UPGRADE: Version 1 → 2
-      // ============================
+      // ============================================================
+      // UPGRADE: Version 1 → 2 (dein bisheriges Upgrade)
+      // ============================================================
       if (oldVersion < 2) {
-        // Tools-Store neu anlegen, damit imageUrl sicher gespeichert wird
         if (db.objectStoreNames.contains("tools")) {
           db.deleteObjectStore("tools");
         }
         db.createObjectStore("tools", { keyPath: "id" });
 
-        // Andere Stores nur anlegen, falls sie fehlen
         if (!db.objectStoreNames.contains("shelves")) {
           db.createObjectStore("shelves", { keyPath: "id" });
         }
@@ -42,6 +40,16 @@ export function openDB(): Promise<IDBDatabase> {
 
         if (!db.objectStoreNames.contains("materials")) {
           db.createObjectStore("materials", { keyPath: "id" });
+        }
+      }
+
+      // ============================================================
+      // UPGRADE: Version 2 → 3 (NEU: Bilder-Store)
+      // ============================================================
+      if (oldVersion < 3) {
+        if (!db.objectStoreNames.contains("images")) {
+          db.createObjectStore("images"); 
+          // kein keyPath → wir speichern Blobs unter custom keys (toolId)
         }
       }
     };

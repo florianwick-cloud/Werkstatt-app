@@ -15,9 +15,9 @@ import BoxRoute from "./routes/BoxRoute";
 import type { Shelf, Box, Tool, Material } from "./types/models";
 import type { DbAdd, DbPut, DbDelete } from "./types/db";
 
-/* =========================
+/* ============================================================
    APP ROOT
-   ========================= */
+   ============================================================ */
 
 export default function App() {
   const [shelves, setShelves] = useState<Shelf[]>([]);
@@ -31,9 +31,9 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 
-  /* =========================
-     LOAD from IndexedDB
-     ========================= */
+  /* ============================================================
+     LOAD FROM INDEXEDDB (inkl. Bilder)
+     ============================================================ */
   useEffect(() => {
     async function load() {
       const db = await openDB();
@@ -46,10 +46,36 @@ export default function App() {
           req.onerror = () => reject();
         });
 
-      setShelves(await readAll<Shelf>("shelves"));
-      setBoxes(await readAll<Box>("boxes"));
-      setTools(await readAll<Tool>("tools"));
-      setMaterials(await readAll<Material>("materials"));
+      const shelves = await readAll<Shelf>("shelves");
+      const boxes = await readAll<Box>("boxes");
+      const tools = await readAll<Tool>("tools");
+      const materials = await readAll<Material>("materials");
+
+      /* Bilder laden */
+      const imageStore = db.transaction("images", "readonly").objectStore("images");
+
+      const toolsWithImages = await Promise.all(
+        tools.map(async (tool) => {
+          if (!tool.imageId) return tool;
+
+          return new Promise<Tool>((resolve) => {
+            const req = imageStore.get(tool.imageId);
+            req.onsuccess = () => {
+              const blob = req.result as Blob | undefined;
+              resolve({
+                ...tool,
+                imageUrl: blob ? URL.createObjectURL(blob) : undefined,
+              });
+            };
+            req.onerror = () => resolve(tool);
+          });
+        })
+      );
+
+      setShelves(shelves);
+      setBoxes(boxes);
+      setTools(toolsWithImages);
+      setMaterials(materials);
 
       setIsLoaded(true);
     }
@@ -57,9 +83,9 @@ export default function App() {
     load();
   }, []);
 
-  /* =========================
+  /* ============================================================
      GLOBALE SUCHE
-     ========================= */
+     ============================================================ */
   useEffect(() => {
     if (!searchQuery.trim()) {
       setSearchResults([]);
@@ -77,9 +103,9 @@ export default function App() {
     );
   }, [searchQuery, shelves, boxes, tools, materials]);
 
-  /* =========================
+  /* ============================================================
      HELPERS
-     ========================= */
+     ============================================================ */
   async function dbAdd(store: string, value: any) {
     const db = await openDB();
     db.transaction(store, "readwrite").objectStore(store).add(value);
@@ -95,14 +121,16 @@ export default function App() {
     db.transaction(store, "readwrite").objectStore(store).delete(id);
   }
 
-  /* ⛔️ WICHTIG: Keine Routen bevor Daten geladen sind */
+  /* ============================================================
+     WICHTIG: Keine Routen bevor Daten geladen sind
+     ============================================================ */
   if (!isLoaded) return null;
 
   return (
     <Routes>
-      {/* =========================
+      {/* ============================================================
           WORKSHOP ROOT
-         ========================= */}
+         ============================================================ */}
       <Route
         path="/"
         element={
@@ -130,24 +158,44 @@ export default function App() {
               const box: Box = {
                 id: crypto.randomUUID(),
                 name: data.name,
-                shelfId: data.shelfId, // FIX: kommt jetzt korrekt aus BoxForm
+                shelfId: data.shelfId,
               };
               await dbAdd("boxes", box);
               setBoxes((p) => [...p, box]);
             }}
 
-            /* ➕ WERKZEUG – jetzt 1:1 übernehmen */
-            onAddTool={async (data) => {
+            /* ➕ WERKZEUG */
+            onAddTool={async (data, imageBlob) => {
+              const id = crypto.randomUUID();
+
               const tool: Tool = {
-                id: crypto.randomUUID(),
-                ...data, // FIX: übernimmt shelfId, boxId, imageUrl korrekt
+                id,
+                name: data.name,
+                description: data.description,
+                shelfId: data.shelfId,
+                boxId: data.boxId,
+                imageId: imageBlob ? id : undefined,
               };
 
               await dbAdd("tools", tool);
-              setTools((p) => [...p, tool]);
+
+              if (imageBlob) {
+                const db = await openDB();
+                db.transaction("images", "readwrite")
+                  .objectStore("images")
+                  .put(imageBlob, id);
+              }
+
+              setTools((p) => [
+                ...p,
+                {
+                  ...tool,
+                  imageUrl: imageBlob ? URL.createObjectURL(imageBlob) : undefined,
+                },
+              ]);
             }}
 
-            /* ➕ MATERIAL – ebenfalls 1:1 übernehmen */
+            /* ➕ MATERIAL */
             onAddMaterial={async (data) => {
               const material: Material = {
                 id: crypto.randomUUID(),
@@ -177,9 +225,9 @@ export default function App() {
         }
       />
 
-      {/* =========================
+      {/* ============================================================
           SHELF ROUTE
-         ========================= */}
+         ============================================================ */}
       <Route
         path="/shelf/:shelfId"
         element={
@@ -198,9 +246,9 @@ export default function App() {
         }
       />
 
-      {/* =========================
+      {/* ============================================================
           BOX ROUTE
-         ========================= */}
+         ============================================================ */}
       <Route
         path="/box/:boxId"
         element={

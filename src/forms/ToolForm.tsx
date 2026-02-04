@@ -1,13 +1,15 @@
 import { useState, useEffect, type ChangeEvent } from "react";
 import type { Tool, Shelf, Box } from "../types/models";
 
-type ToolInput = Omit<Tool, "id">;
+type ToolInput = Omit<Tool, "id" | "imageId" | "imageUrl"> & {
+  imageId?: string;
+};
 
 type Props = {
   initialTool?: Tool;
   shelves: Shelf[];
   boxes: Box[];
-  onSave: (tool: ToolInput) => void;
+  onSave: (tool: ToolInput, imageBlob: Blob | null) => void;
   onCancel: () => void;
 };
 
@@ -33,9 +35,17 @@ export default function ToolForm({
     initialTool?.boxId ?? null
   );
 
+  /* ============================================================
+     Bild-Preview (Object URL)
+     ============================================================ */
   const [imageUrl, setImageUrl] = useState<string | null>(
     initialTool?.imageUrl ?? null
   );
+
+  /* ============================================================
+     Der WICHTIGE neue State: Blob für iOS-sichere Speicherung
+     ============================================================ */
+  const [imageBlob, setImageBlob] = useState<Blob | null>(null);
 
   /* ============================================================
      iPHONE-SICHERER BILD-UPLOADER MIT AUTOMATISCHER KOMPRESSION
@@ -73,11 +83,26 @@ export default function ToolForm({
 
       ctx.drawImage(img, 0, 0, width, height);
 
-      const compressed = canvas.toDataURL("image/jpeg", 0.7);
-      setImageUrl(compressed);
+      /* WICHTIG: Jetzt als Blob speichern, nicht Base64 */
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) return;
+
+          setImageBlob(blob);
+
+          /* Preview erzeugen */
+          const url = URL.createObjectURL(blob);
+          setImageUrl(url);
+        },
+        "image/jpeg",
+        0.7
+      );
     };
   }
 
+  /* ============================================================
+     Shelf/Box Logik
+     ============================================================ */
   const shelfBoxes = boxes.filter((b) => b.shelfId === selectedShelfId);
 
   useEffect(() => {
@@ -96,6 +121,9 @@ export default function ToolForm({
     }
   }, [location, selectedShelfId, shelfBoxes]);
 
+  /* ============================================================
+     SPEICHERN
+     ============================================================ */
   function handleSubmit() {
     if (!name.trim()) return;
     if (!selectedShelfId) return;
@@ -106,12 +134,15 @@ export default function ToolForm({
       description: description.trim(),
       shelfId: selectedShelfId,
       boxId: location === "box" ? selectedBoxId : null,
-      imageUrl: imageUrl ?? undefined,
+      imageId: initialTool?.imageId, // wird in App.tsx überschrieben, falls neues Bild
     };
 
-    onSave(toolInput);
+    onSave(toolInput, imageBlob);
   }
 
+  /* ============================================================
+     UI
+     ============================================================ */
   return (
     <div
       style={{
