@@ -45,41 +45,40 @@ export default function App() {
 
       const imageStore = db.transaction("images", "readonly").objectStore("images");
 
-const toolsWithImages = await Promise.all(
-  toolsRaw.map(
-    (tool) =>
-      new Promise<Tool>((resolve) => {
-        if (!tool.imageId) {
-          resolve({ ...tool, imageUrl: null });
-          return;
-        }
+      const toolsWithImages = await Promise.all(
+        toolsRaw.map(
+          (tool) =>
+            new Promise<Tool>((resolve) => {
+              if (!tool.imageId) {
+                resolve({ ...tool, imageUrl: null });
+                return;
+              }
 
-        const req = imageStore.get(tool.imageId);
-        req.onsuccess = () => {
-          const entry = req.result;
+              const req = imageStore.get(tool.imageId);
+              req.onsuccess = () => {
+                const entry = req.result;
 
-          if (entry && typeof entry.base64 === "string") {
-            resolve({
-              ...tool,
-              imageUrl: entry.base64,
-            });
-          } else {
-            resolve({
-              ...tool,
-              imageUrl: null,
-            });
-          }
-        };
+                if (entry && typeof entry.base64 === "string") {
+                  resolve({
+                    ...tool,
+                    imageUrl: entry.base64,
+                  });
+                } else {
+                  resolve({
+                    ...tool,
+                    imageUrl: null,
+                  });
+                }
+              };
 
-        req.onerror = () =>
-          resolve({
-            ...tool,
-            imageUrl: null,
-          });
-      })
-  )
-);
-
+              req.onerror = () =>
+                resolve({
+                  ...tool,
+                  imageUrl: null,
+                });
+            })
+        )
+      );
 
       if (isCancelled) return;
 
@@ -95,9 +94,6 @@ const toolsWithImages = await Promise.all(
 
     return () => {
       isCancelled = true;
-      tools.forEach((t) => {
-        if (t.imageUrl) URL.revokeObjectURL(t.imageUrl);
-      });
     };
   }, []);
 
@@ -165,34 +161,36 @@ const toolsWithImages = await Promise.all(
               await dbAdd("boxes", box);
               setBoxes((p) => [...p, box]);
             }}
-            onAddTool={async (data, imageBlob) => {
+            onAddTool={async (toolInput) => {
               const id = crypto.randomUUID();
 
+              // 1. Bild speichern
+              let imageId: string | undefined = undefined;
+              if (toolInput.imageBase64) {
+                const db = await openDB();
+                await db
+                  .transaction("images", "readwrite")
+                  .objectStore("images")
+                  .put({ base64: toolInput.imageBase64 }, id);
+
+                imageId = id;
+              }
+
+              // 2. Tool speichern
               const tool: Tool = {
                 id,
-                name: data.name,
-                description: data.description,
-                shelfId: data.shelfId,
-                boxId: data.boxId,
-                imageId: imageBlob ? id : undefined,
+                name: toolInput.name,
+                description: toolInput.description ?? "",
+                shelfId: toolInput.shelfId,
+                boxId: toolInput.boxId,
+                imageId,
+                imageUrl: toolInput.imageBase64 ?? null,
               };
 
               await dbAdd("tools", tool);
 
-              if (imageBlob) {
-                const db = await openDB();
-                db.transaction("images", "readwrite")
-                  .objectStore("images")
-                  .put(imageBlob, id);
-              }
-
-              setTools((p) => [
-                ...p,
-                {
-                  ...tool,
-                  imageUrl: imageBlob ? URL.createObjectURL(imageBlob) : undefined,
-                },
-              ]);
+              // 3. UI aktualisieren
+              setTools((p) => [...p, tool]);
             }}
             onAddMaterial={async (data) => {
               const material: Material = {
