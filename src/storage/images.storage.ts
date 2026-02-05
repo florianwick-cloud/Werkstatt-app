@@ -4,49 +4,50 @@ import { openDB } from "./db";
 const STORE = "images";
 
 /* =========================
-   SAVE IMAGE BLOB
+   BLOB → BASE64
    ========================= */
-export async function saveImage(id: string, blob: Blob): Promise<void> {
-  const db = await openDB();
-
+export function blobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE, "readwrite");
-    const store = tx.objectStore(STORE);
-    const request = store.put(blob, id);
-
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject("Fehler beim Speichern des Bildes");
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
   });
 }
 
 /* =========================
-   LOAD IMAGE (Safari-sicher)
+   SAVE IMAGE (BASE64)
    ========================= */
-export async function loadImage(id: string): Promise<string> {
+export async function saveImage(base64: string): Promise<string> {
   const db = await openDB();
+  const id = crypto.randomUUID();
 
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE, "readonly");
-    const store = tx.objectStore(STORE);
-    const request = store.get(id);
+  await db.put(STORE, { id, base64 });
 
-    request.onsuccess = () => {
-      const blob = request.result as Blob | undefined;
+  return id;
+}
 
-      if (!blob) {
-        resolve("");
-        return;
-      }
+/* =========================
+   UPDATE IMAGE
+   ========================= */
+export async function updateImage(id: string, base64: string): Promise<void> {
+  const db = await openDB();
+  await db.put(STORE, { id, base64 });
+}
 
-      // Safari-sicher: Blob in File umwandeln
-      const file = new File([blob], `${id}.png`, { type: blob.type });
+/* =========================
+   LOAD IMAGE
+   ========================= */
+export async function loadImage(id: string): Promise<string | null> {
+  const db = await openDB();
+  const entry = await db.get(STORE, id);
+  return entry?.base64 ?? null;
+}
 
-      // Safari-sicher: neue URL erzeugen
-      const url = URL.createObjectURL(file);
-
-      resolve(url);
-    };
-
-    request.onerror = () => reject("Fehler beim Laden des Bildes");
-  });
+/* =========================
+   DELETE IMAGE
+   ========================= */
+export async function deleteImage(id: string): Promise<void> {
+  const db = await openDB();
+  await db.delete(STORE, id);
 }

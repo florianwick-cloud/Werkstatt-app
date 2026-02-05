@@ -13,6 +13,8 @@ import MaterialForm from "../../forms/MaterialForm";
 import QRLabel from "../qr/QRLabel";
 import QRScanner from "../qr/QRScanner";
 
+import { saveImage, updateImage } from "../../storage/images.storage";
+
 type Props = {
   shelf: Shelf;
   shelves: Shelf[];
@@ -26,9 +28,9 @@ type Props = {
   onEditBox: (box: Box) => void;
   onDeleteBox: (id: string) => void;
 
-  // ⭐ NEUE SIGNATUR: ToolInput + imageBlob
-  onAddTool: (toolInput: any, imageBlob: Blob | null) => void;
-  onEditTool: (toolInput: any, imageBlob: Blob | null) => void;
+  // ⭐ NEUE SIGNATUR: KEIN Blob mehr
+  onAddTool: (toolInput: any) => void;
+  onEditTool: (toolInput: any) => void;
   onDeleteTool: (id: string) => void;
 
   onAddMaterial: (material: Omit<Material, "id">) => void;
@@ -195,13 +197,28 @@ export default function ShelfView({
           initialTool={initialTool ?? undefined}
           shelves={shelves}
           boxes={boxes}
-          onSave={(toolInput, imageBlob) => {
-            if (initialTool) {
-              onEditTool(toolInput, imageBlob);
-            } else {
-              onAddTool(toolInput, imageBlob);
+          onSave={async (toolInput) => {
+
+            // ⭐ 1. Bild speichern oder aktualisieren
+            if (toolInput.imageBase64) {
+              if (toolInput.imageId) {
+                await updateImage(toolInput.imageId, toolInput.imageBase64);
+              } else {
+                const newId = await saveImage(toolInput.imageBase64);
+                toolInput.imageId = newId;
+              }
+
+              toolInput.imageUrl = toolInput.imageBase64;
             }
 
+            // ⭐ 2. Tool speichern
+            if (initialTool) {
+              onEditTool(toolInput);
+            } else {
+              onAddTool(toolInput);
+            }
+
+            // ⭐ 3. Formular schließen
             setShowToolForm(false);
             setInitialTool(null);
           }}

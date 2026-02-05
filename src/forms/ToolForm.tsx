@@ -1,5 +1,6 @@
 import { useState, useEffect, type ChangeEvent } from "react";
 import type { Tool, Shelf, Box } from "../types/models";
+import { blobToBase64 } from "../storage/images.storage";
 
 type ToolInput = {
   id?: string;
@@ -8,13 +9,14 @@ type ToolInput = {
   shelfId: string;
   boxId: string | null;
   imageId?: string;
+  imageBase64?: string | null;
 };
 
 type Props = {
   initialTool?: Tool;
   shelves: Shelf[];
   boxes: Box[];
-  onSave: (tool: ToolInput, imageBlob: Blob | null) => void;
+  onSave: (tool: ToolInput) => void;
   onCancel: () => void;
 };
 
@@ -40,11 +42,13 @@ export default function ToolForm({
     initialTool?.boxId ?? null
   );
 
+  // Base64 statt Blob-URL
   const [imageUrl, setImageUrl] = useState<string | null>(
     initialTool?.imageUrl ?? null
   );
 
-  const [imageBlob, setImageBlob] = useState<Blob | null>(null);
+  // Base64 für Speicherung
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
 
   async function handleImageUpload(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -80,17 +84,14 @@ export default function ToolForm({
       ctx.drawImage(img, 0, 0, width, height);
 
       canvas.toBlob(
-        (blob) => {
+        async (blob) => {
           if (!blob) return;
 
-          const jpegBlob = blob.type
-            ? blob
-            : new Blob([blob], { type: "image/jpeg" });
+          // Blob → Base64
+          const base64 = await blobToBase64(blob);
 
-          setImageBlob(jpegBlob);
-
-          const url = URL.createObjectURL(jpegBlob);
-          setImageUrl(url);
+          setImageBase64(base64);
+          setImageUrl(base64);
         },
         "image/jpeg",
         0.7
@@ -128,9 +129,10 @@ export default function ToolForm({
       shelfId: selectedShelfId,
       boxId: location === "box" ? selectedBoxId : null,
       imageId: initialTool?.imageId,
+      imageBase64: imageBase64 ?? initialTool?.imageUrl ?? null,
     };
 
-    onSave(toolInput, imageBlob);
+    onSave(toolInput);
   }
 
   return (

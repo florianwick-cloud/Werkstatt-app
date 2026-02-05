@@ -26,7 +26,10 @@ type Props = {
 
   onAddShelf: (shelf: Omit<Shelf, "id">) => void;
   onAddBox: (box: Omit<Box, "id">) => void;
+
+  // ⭐ NEUE SIGNATUR: KEIN Blob mehr
   onAddTool: (tool: Omit<Tool, "id">) => void;
+
   onAddMaterial: (material: Omit<Material, "id">) => void;
 
   onUpdateShelf: (shelf: Shelf) => void;

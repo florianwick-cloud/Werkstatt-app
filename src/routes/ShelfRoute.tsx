@@ -3,6 +3,7 @@ import type { Shelf, Box, Tool, Material } from "../types/models";
 import type { DbAdd, DbPut, DbDelete } from "../types/db";
 import ShelfView from "../components/ShelfView/ShelfView";
 import { openDB } from "../storage/db";
+import { saveImage, updateImage } from "../storage/images.storage";
 
 type ShelfRouteProps = {
   shelves: Shelf[];
@@ -62,70 +63,64 @@ export default function ShelfRoute({
     setBoxes((prev) => prev.filter((b) => b.id !== id));
   }
 
-  async function onAddTool(toolInput: any, imageBlob: Blob | null) {
+  // ⭐ NEUE TOOL-LOGIK (Base64 statt Blob)
+  async function onAddTool(toolInput: any) {
     const id = crypto.randomUUID();
 
+    // 1. Bild speichern
+    let imageId: string | undefined = undefined;
+    if (toolInput.imageBase64) {
+      imageId = await saveImage(toolInput.imageBase64);
+    }
+
+    // 2. Tool speichern
     const tool: Tool = {
       id,
       name: toolInput.name,
       description: toolInput.description ?? "",
       shelfId: safeShelf.id,
       boxId: null,
-      imageId: imageBlob ? id : undefined,
+      imageId,
+      imageUrl: toolInput.imageBase64 ?? null,
     };
 
     await dbAdd("tools", tool);
 
-    if (imageBlob) {
-      const db = await openDB();
-      db.transaction("images", "readwrite")
-        .objectStore("images")
-        .put(imageBlob, id);
-    }
-
-    setTools((prev) => [
-      ...prev,
-      {
-        ...tool,
-        imageUrl: imageBlob ? URL.createObjectURL(imageBlob) : undefined,
-      },
-    ]);
+    // 3. UI aktualisieren
+    setTools((prev) => [...prev, tool]);
   }
 
-  async function onEditTool(toolInput: any, imageBlob: Blob | null) {
+  async function onEditTool(toolInput: any) {
     const oldTool = tools.find((t) => t.id === toolInput.id);
     if (!oldTool) return;
 
+    let imageId = oldTool.imageId ?? undefined;
+
+    // 1. Bild aktualisieren oder neu speichern
+    if (toolInput.imageBase64) {
+      if (imageId) {
+        await updateImage(imageId, toolInput.imageBase64);
+      } else {
+        imageId = await saveImage(toolInput.imageBase64);
+      }
+    }
+
+    // 2. Tool aktualisieren
     const updated: Tool = {
       ...oldTool,
       name: toolInput.name,
       description: toolInput.description ?? "",
       shelfId: safeShelf.id,
       boxId: null,
-      imageId: oldTool.imageId ?? (imageBlob ? oldTool.id : undefined),
+      imageId,
+      imageUrl: toolInput.imageBase64 ?? oldTool.imageUrl ?? null,
     };
-
-    const db = await openDB();
-
-    if (imageBlob) {
-      db.transaction("images", "readwrite")
-        .objectStore("images")
-        .put(imageBlob, updated.id);
-    }
 
     await dbPut("tools", updated);
 
+    // 3. UI aktualisieren
     setTools((prev) =>
-      prev.map((t) =>
-        t.id === updated.id
-          ? {
-              ...updated,
-              imageUrl: imageBlob
-                ? URL.createObjectURL(imageBlob)
-                : t.imageUrl,
-            }
-          : t
-      )
+      prev.map((t) => (t.id === updated.id ? updated : t))
     );
   }
 

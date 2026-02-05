@@ -45,42 +45,41 @@ export default function App() {
 
       const imageStore = db.transaction("images", "readonly").objectStore("images");
 
-      const toolsWithImages = await Promise.all(
-        toolsRaw.map(
-          (tool) =>
-            new Promise<Tool>((resolve) => {
-              if (!tool.imageId) {
-                resolve({ ...tool, imageId: tool.imageId });
-                return;
-              }
+const toolsWithImages = await Promise.all(
+  toolsRaw.map(
+    (tool) =>
+      new Promise<Tool>((resolve) => {
+        if (!tool.imageId) {
+          resolve({ ...tool, imageUrl: null });
+          return;
+        }
 
-              const req = imageStore.get(tool.imageId);
-              req.onsuccess = () => {
-                const value = req.result;
+        const req = imageStore.get(tool.imageId);
+        req.onsuccess = () => {
+          const entry = req.result;
 
-                if (value instanceof Blob) {
-                  const url = URL.createObjectURL(value);
-                  resolve({
-                    ...tool,
-                    imageId: tool.imageId,
-                    imageUrl: url,
-                  });
-                } else {
-                  resolve({
-                    ...tool,
-                    imageId: tool.imageId,
-                    imageUrl: undefined,
-                  });
-                }
-              };
-              req.onerror = () =>
-                resolve({
-                  ...tool,
-                  imageId: tool.imageId,
-                });
-            })
-        )
-      );
+          if (entry && typeof entry.base64 === "string") {
+            resolve({
+              ...tool,
+              imageUrl: entry.base64,
+            });
+          } else {
+            resolve({
+              ...tool,
+              imageUrl: null,
+            });
+          }
+        };
+
+        req.onerror = () =>
+          resolve({
+            ...tool,
+            imageUrl: null,
+          });
+      })
+  )
+);
+
 
       if (isCancelled) return;
 

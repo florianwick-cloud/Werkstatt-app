@@ -26,14 +26,17 @@ export type Tool = {
   name: string;
   description?: string;
 
-  // 🔥 Entscheidend für Bild-Persistenz in IndexedDB
-  imageId?: string;
-
-  // 🔥 UI-Preview (Object URL)
-  imageUrl?: string;
-
   shelfId: string;
   boxId: string | null;
+
+  // 🔥 ID im IndexedDB-Store "images"
+  imageId?: string | null;
+
+  // 🔥 Base64 für <img src="...">
+  imageUrl?: string | null;
+
+  // 🔥 Wird nur beim Speichern genutzt (ToolForm → Route)
+  imageBase64?: string | null;
 };
 
 /* =========================

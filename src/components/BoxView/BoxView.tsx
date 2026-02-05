@@ -23,9 +23,9 @@ type Props = {
 
   onBack: () => void;
 
-  // ⭐ Neue Signatur: ToolInput + imageBlob
-  onAddTool: (toolInput: any, imageBlob: Blob | null) => void;
-  onEditTool: (toolInput: any, imageBlob: Blob | null) => void;
+  // ⭐ Neue Signatur: KEIN Blob mehr
+  onAddTool: (toolInput: any) => void;
+  onEditTool: (toolInput: any) => void;
   onDeleteTool: (id: string) => void;
 
   onAddMaterial: (material: Omit<Material, "id">) => void;
@@ -160,11 +160,11 @@ export default function BoxView({
           initialTool={initialTool ?? undefined}
           shelves={shelves}
           boxes={boxes}
-          onSave={(toolInput, imageBlob) => {
+          onSave={(toolInput) => {
             if (initialTool) {
-              onEditTool(toolInput, imageBlob);
+              onEditTool(toolInput);
             } else {
-              onAddTool(toolInput, imageBlob);
+              onAddTool(toolInput);
             }
 
             setShowToolForm(false);
