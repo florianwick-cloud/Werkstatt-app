@@ -48,6 +48,23 @@ export default function ToolItem({
     }
   }, [selectedShelfId, location]);
 
+  // ⭐ SAFARI-FIX: Lokale URL + verzögertes revokeObjectURL
+  const [localUrl, setLocalUrl] = useState(tool.imageUrl);
+
+  useEffect(() => {
+    setLocalUrl(tool.imageUrl);
+  }, [tool.imageUrl]);
+
+  useEffect(() => {
+    return () => {
+      if (localUrl) {
+        setTimeout(() => {
+          URL.revokeObjectURL(localUrl);
+        }, 200); // Safari braucht Delay
+      }
+    };
+  }, [localUrl]);
+
   function save() {
     if (!name.trim()) return;
 
@@ -75,10 +92,10 @@ export default function ToolItem({
         alignItems: "flex-start",
       }}
     >
-      {/* ⭐ Bildanzeige korrigiert: imageUrl statt image */}
-      {tool.imageUrl && (
+      {/* ⭐ Bildanzeige mit Safari-sicherer URL */}
+      {localUrl && (
         <img
-          src={tool.imageUrl}
+          src={localUrl}
           alt={tool.name}
           style={{
             width: "48px",
