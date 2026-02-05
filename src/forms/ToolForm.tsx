@@ -1,6 +1,5 @@
 import { useState, useEffect, type ChangeEvent } from "react";
 import type { Tool, Shelf, Box } from "../types/models";
-import { blobToBase64 } from "../storage/images.storage";
 
 type ToolInput = {
   id?: string;
@@ -42,25 +41,27 @@ export default function ToolForm({
     initialTool?.boxId ?? null
   );
 
-  // Base64 statt Blob-URL
-  const [imageUrl, setImageUrl] = useState<string | null>(
-    initialTool?.imageUrl ?? null
-  );
+  // Falls initialTool.imageUrl noch eine alte Blob-URL ist → ignorieren
+  const initialImage =
+    initialTool?.imageUrl?.startsWith("blob:") ? null : initialTool?.imageUrl ?? null;
 
-  // Base64 für Speicherung
-  const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(initialImage);
+  const [imageBase64, setImageBase64] = useState<string | null>(initialImage);
 
+  // --- NEUER, iOS-SICHERER UPLOAD-FLOW ---
   async function handleImageUpload(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // 1) File → Base64 (ohne Blob-URL!)
+    const base64 = await fileToBase64(file);
+
+    // 2) Bild laden, um Größe zu prüfen
     const img = new Image();
-    img.src = URL.createObjectURL(file);
+    img.src = base64;
 
     img.onload = () => {
       const MAX_SIZE = 1024;
-
-      const canvas = document.createElement("canvas");
       let { width, height } = img;
 
       if (width > height) {
@@ -75,6 +76,7 @@ export default function ToolForm({
         }
       }
 
+      const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
 
@@ -83,20 +85,20 @@ export default function ToolForm({
 
       ctx.drawImage(img, 0, 0, width, height);
 
-      canvas.toBlob(
-        async (blob) => {
-          if (!blob) return;
+      // 3) Canvas → Base64 (ohne Blob!)
+      const resizedBase64 = canvas.toDataURL("image/jpeg", 0.7);
 
-          // Blob → Base64
-          const base64 = await blobToBase64(blob);
-
-          setImageBase64(base64);
-          setImageUrl(base64);
-        },
-        "image/jpeg",
-        0.7
-      );
+      setImageBase64(resizedBase64);
+      setImageUrl(resizedBase64);
     };
+  }
+
+  function fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.readAsDataURL(file);
+    });
   }
 
   const shelfBoxes = boxes.filter((b) => b.shelfId === selectedShelfId);
@@ -129,7 +131,7 @@ export default function ToolForm({
       shelfId: selectedShelfId,
       boxId: location === "box" ? selectedBoxId : null,
       imageId: initialTool?.imageId,
-      imageBase64: imageBase64 ?? initialTool?.imageUrl ?? null,
+      imageBase64: imageBase64 ?? null,
     };
 
     onSave(toolInput);

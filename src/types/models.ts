@@ -1,7 +1,8 @@
+// src/types/models.ts
+
 /* =========================
    REGAL (EBENE 1)
    ========================= */
-
 export type Shelf = {
   id: string;
   name: string;
@@ -10,7 +11,6 @@ export type Shelf = {
 /* =========================
    KISTE (EBENE 2)
    ========================= */
-
 export type Box = {
   id: string;
   name: string;
@@ -20,7 +20,6 @@ export type Box = {
 /* =========================
    WERKZEUG
    ========================= */
-
 export type Tool = {
   id: string;
   name: string;
@@ -29,27 +28,27 @@ export type Tool = {
   shelfId: string;
   boxId: string | null;
 
-  // 🔥 ID im IndexedDB-Store "images"
-  imageId?: string | null;
-
-  // 🔥 Base64 für <img src="...">
-  imageUrl?: string | null;
-
-  // 🔥 Wird nur beim Speichern genutzt (ToolForm → Route)
+  /**
+   * EINZIGES Bildfeld:
+   * Base64-String für <img src="...">
+   * iOS-sicher, offline-sicher, PWA-sicher.
+   */
   imageBase64?: string | null;
 };
 
 /* =========================
    MATERIAL
    ========================= */
-
 export type Material = {
   id: string;
   name: string;
   quantity: number;
   unit: string;
 
-  imageUrl?: string;
+  /**
+   * Auch hier: nur Base64.
+   */
+  imageBase64?: string | null;
 
   shelfId: string;
   boxId: string | null;
