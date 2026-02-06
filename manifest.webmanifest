@@ -1,1 +1,27 @@
-{"name":"Werkstatt","short_name":"Werkstatt","description":"Deine persönliche Werkstatt-App","start_url":"/Werkstatt-app/","display":"standalone","background_color":"#ffffff","theme_color":"#ffffff","lang":"en","scope":"/Werkstatt-app-Flo/","icons":[{"src":"pwa-192x192.png","sizes":"192x192","type":"image/png"},{"src":"pwa-512x512.png","sizes":"512x512","type":"image/png"},{"src":"pwa-512x512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}]}
+{
+  "name": "Werkstatt",
+  "short_name": "Werkstatt",
+  "description": "Deine persönliche Werkstatt-App",
+  "start_url": "/Werkstatt-app-Flo/",
+  "scope": "/Werkstatt-app-Flo/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/Werkstatt-app-Flo/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/Werkstatt-app-Flo/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/Werkstatt-app-Flo/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
