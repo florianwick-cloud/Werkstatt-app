@@ -3,7 +3,7 @@
 import type { Shelf, Box, Tool, Material } from "../types/models";
 
 const DB_NAME = "workshop-db";
-const DB_VERSION = 4; // ⭐ Version erhöht, damit images-Store sauber neu angelegt wird
+const DB_VERSION = 5; // ⭐ Neue Version, damit Stores sauber neu angelegt werden
 
 export function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -22,46 +22,25 @@ export function openDB(): Promise<IDBDatabase> {
       const oldVersion = event.oldVersion;
 
       // ============================================================
-      // UPGRADE: Version 1 → 2 (dein bisheriges Upgrade)
+      // VERSION 1 → 5: ALLE STORES SAUBER NEU ANLEGEN
       // ============================================================
-      if (oldVersion < 2) {
-        if (db.objectStoreNames.contains("tools")) {
-          db.deleteObjectStore("tools");
-        }
-        db.createObjectStore("tools", { keyPath: "id" });
 
-        if (!db.objectStoreNames.contains("shelves")) {
-          db.createObjectStore("shelves", { keyPath: "id" });
-        }
-
-        if (!db.objectStoreNames.contains("boxes")) {
-          db.createObjectStore("boxes", { keyPath: "id" });
-        }
-
-        if (!db.objectStoreNames.contains("materials")) {
-          db.createObjectStore("materials", { keyPath: "id" });
+      // Wir löschen ALLE Stores, die existieren.
+      const stores = ["shelves", "boxes", "materials", "tools", "images"];
+      for (const store of stores) {
+        if (db.objectStoreNames.contains(store)) {
+          db.deleteObjectStore(store);
         }
       }
 
-      // ============================================================
-      // UPGRADE: Version 2 → 3 (NEU: Bilder-Store)
-      // ============================================================
-      if (oldVersion < 3) {
-        if (!db.objectStoreNames.contains("images")) {
-          db.createObjectStore("images");
-          // kein keyPath → wir speichern Blobs unter custom keys (toolId)
-        }
-      }
+      // Jetzt legen wir ALLE Stores sauber neu an.
+      db.createObjectStore("shelves", { keyPath: "id" });
+      db.createObjectStore("boxes", { keyPath: "id" });
+      db.createObjectStore("materials", { keyPath: "id" });
+      db.createObjectStore("tools", { keyPath: "id" });
 
-      // ============================================================
-      // UPGRADE: Version 3 → 4 (images-Store sauber neu anlegen)
-      // ============================================================
-      if (oldVersion < 4) {
-        if (db.objectStoreNames.contains("images")) {
-          db.deleteObjectStore("images");
-        }
-        db.createObjectStore("images");
-      }
+      // Images ohne keyPath → wir speichern unter custom keys (toolId)
+      db.createObjectStore("images");
     };
   });
 }
