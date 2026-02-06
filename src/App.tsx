@@ -11,7 +11,6 @@ import ShelfRoute from "./routes/ShelfRoute";
 import BoxRoute from "./routes/BoxRoute";
 
 import type { Shelf, Box, Tool, Material } from "./types/models";
-import type { DbAdd, DbPut, DbDelete } from "./types/db";
 
 export default function App() {
   const [shelves, setShelves] = useState<Shelf[]>([]);
@@ -24,6 +23,9 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 
+  // -------------------------------------------------------------
+  // INITIAL LOAD
+  // -------------------------------------------------------------
   useEffect(() => {
     let isCancelled = false;
 
@@ -97,6 +99,9 @@ export default function App() {
     };
   }, []);
 
+  // -------------------------------------------------------------
+  // SEARCH
+  // -------------------------------------------------------------
   useEffect(() => {
     if (!searchQuery.trim()) {
       setSearchResults([]);
@@ -114,6 +119,9 @@ export default function App() {
     );
   }, [searchQuery, shelves, boxes, tools, materials]);
 
+  // -------------------------------------------------------------
+  // DB HELPERS
+  // -------------------------------------------------------------
   async function dbAdd(store: string, value: any) {
     const db = await openDB();
     db.transaction(store, "readwrite").objectStore(store).add(value);
@@ -131,6 +139,9 @@ export default function App() {
 
   if (!isLoaded) return null;
 
+  // -------------------------------------------------------------
+  // RENDER
+  // -------------------------------------------------------------
   return (
     <Routes>
       <Route
@@ -164,19 +175,31 @@ export default function App() {
             onAddTool={async (toolInput) => {
               const id = crypto.randomUUID();
 
-              // 1. Bild speichern
+              // -------------------------------------------------------------
+              // 1. BILD SPEICHERN (mit Debug)
+              // -------------------------------------------------------------
               let imageId: string | undefined = undefined;
+
               if (toolInput.imageBase64) {
                 const db = await openDB();
-                await db
-                  .transaction("images", "readwrite")
-                  .objectStore("images")
-                  .put({ base64: toolInput.imageBase64 }, id);
+
+                console.log("🔍 DEBUG: DB Stores beim Speichern:", Array.from(db.objectStoreNames));
+
+                const tx = db.transaction("images", "readwrite");
+                console.log("🔍 DEBUG: Transaction mode:", tx.mode);
+
+                const store = tx.objectStore("images");
+                console.log("🔍 DEBUG: Store:", store);
+                console.log("🔍 DEBUG: Store.put existiert:", typeof store.put);
+
+                store.put({ base64: toolInput.imageBase64 }, id);
 
                 imageId = id;
               }
 
-              // 2. Tool speichern
+              // -------------------------------------------------------------
+              // 2. TOOL SPEICHERN
+              // -------------------------------------------------------------
               const tool: Tool = {
                 id,
                 name: toolInput.name,
@@ -189,7 +212,9 @@ export default function App() {
 
               await dbAdd("tools", tool);
 
-              // 3. UI aktualisieren
+              // -------------------------------------------------------------
+              // 3. UI AKTUALISIEREN
+              // -------------------------------------------------------------
               setTools((p) => [...p, tool]);
             }}
             onAddMaterial={async (data) => {

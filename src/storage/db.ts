@@ -3,7 +3,7 @@
 import type { Shelf, Box, Tool, Material } from "../types/models";
 
 const DB_NAME = "workshop-db";
-const DB_VERSION = 5; // ⭐ Neue Version, damit Stores sauber neu angelegt werden
+const DB_VERSION = 6; // Neue Version, damit Stores sauber neu angelegt werden
 
 export function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -14,26 +14,41 @@ export function openDB(): Promise<IDBDatabase> {
     };
 
     request.onsuccess = () => {
-      resolve(request.result);
+      const db = request.result;
+
+      // ⭐ DEBUG: Welche Stores existieren wirklich?
+      console.log("IndexedDB geöffnet.");
+      console.log("DB-Version:", db.version);
+      console.log("Stores:", Array.from(db.objectStoreNames));
+
+      resolve(db);
     };
 
     request.onupgradeneeded = (event) => {
       const db = request.result;
       const oldVersion = event.oldVersion;
 
+      console.log(
+        `IndexedDB Upgrade: alte Version ${oldVersion} → neue Version ${DB_VERSION}`
+      );
+
       // ============================================================
-      // VERSION 1 → 5: ALLE STORES SAUBER NEU ANLEGEN
+      // ALLE STORES SAUBER NEU ANLEGEN
       // ============================================================
 
-      // Wir löschen ALLE Stores, die existieren.
       const stores = ["shelves", "boxes", "materials", "tools", "images"];
+
+      // Alte Stores löschen
       for (const store of stores) {
         if (db.objectStoreNames.contains(store)) {
+          console.log(`Lösche alten Store: ${store}`);
           db.deleteObjectStore(store);
         }
       }
 
-      // Jetzt legen wir ALLE Stores sauber neu an.
+      // Neue Stores anlegen
+      console.log("Lege Stores neu an…");
+
       db.createObjectStore("shelves", { keyPath: "id" });
       db.createObjectStore("boxes", { keyPath: "id" });
       db.createObjectStore("materials", { keyPath: "id" });
@@ -41,6 +56,8 @@ export function openDB(): Promise<IDBDatabase> {
 
       // Images ohne keyPath → wir speichern unter custom keys (toolId)
       db.createObjectStore("images");
+
+      console.log("Alle Stores erfolgreich neu angelegt.");
     };
   });
 }
