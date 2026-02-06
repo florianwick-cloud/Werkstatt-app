@@ -1,10 +1,1 @@
-// Leerer Service Worker, der ALLE alten Caches löscht
-self.addEventListener("install", () => self.skipWaiting());
-
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.map((key) => caches.delete(key)))
-    )
-  );
-});
+if(!self.define){let e,i={};const n=(n,s)=>(n=new URL(n+".js",s).href,i[n]||new Promise(i=>{if("document"in self){const e=document.createElement("script");e.src=n,e.onload=i,document.head.appendChild(e)}else e=n,importScripts(n),i()}).then(()=>{let e=i[n];if(!e)throw new Error(`Module ${n} didn’t register its module`);return e}));self.define=(s,r)=>{const o=e||("document"in self?document.currentScript.src:"")||location.href;if(i[o])return;let c={};const l=e=>n(e,o),t={module:{uri:o},exports:c,require:l};i[o]=Promise.all(s.map(e=>t[e]||l(e))).then(e=>(r(...e),c))}}define(["./workbox-483284f5"],function(e){"use strict";self.skipWaiting(),e.clientsClaim(),e.precacheAndRoute([{url:"vite.svg",revision:"8e3a10e157f75ada21ab742c022d5430"},{url:"placeholder.png",revision:"d41d8cd98f00b204e9800998ecf8427e"},{url:"index.html",revision:"1c4596df4bfc0fd67836c4a183c00598"},{url:"icon-512.png",revision:"9baae6644253121644b5b4e56185f348"},{url:"icon-192.png",revision:"9baae6644253121644b5b4e56185f348"},{url:"favicon.svg",revision:"d41d8cd98f00b204e9800998ecf8427e"},{url:"apple-touch-icon.png",revision:"9baae6644253121644b5b4e56185f348"},{url:"404.html",revision:"37ba7331b2a9cb08cd7f9e66db8d8646"},{url:"assets/workbox-window.prod.es5-BIl4cyR9.js",revision:null},{url:"assets/index-BKL5B1za.css",revision:null},{url:"assets/index-5aGGB3XP.js",revision:null},{url:"apple-touch-icon.png",revision:"9baae6644253121644b5b4e56185f348"},{url:"favicon.svg",revision:"d41d8cd98f00b204e9800998ecf8427e"},{url:"manifest.webmanifest",revision:"866c163817043c102532721c7ed0e62b"}],{}),e.cleanupOutdatedCaches(),e.registerRoute(new e.NavigationRoute(e.createHandlerBoundToURL("index.html")))});
