@@ -7,7 +7,6 @@ type ToolInput = {
   description?: string;
   shelfId: string;
   boxId: string | null;
-  imageId?: string;
   imageBase64?: string | null;
 };
 
@@ -48,15 +47,13 @@ export default function ToolForm({
   const [imageUrl, setImageUrl] = useState<string | null>(initialImage);
   const [imageBase64, setImageBase64] = useState<string | null>(initialImage);
 
-  // --- NEUER, iOS-SICHERER UPLOAD-FLOW ---
+  // --- iOS-sicherer Upload-Flow ---
   async function handleImageUpload(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // 1) File → Base64 (ohne Blob-URL!)
     const base64 = await fileToBase64(file);
 
-    // 2) Bild laden, um Größe zu prüfen
     const img = new Image();
     img.src = base64;
 
@@ -85,7 +82,6 @@ export default function ToolForm({
 
       ctx.drawImage(img, 0, 0, width, height);
 
-      // 3) Canvas → Base64 (ohne Blob!)
       const resizedBase64 = canvas.toDataURL("image/jpeg", 0.7);
 
       setImageBase64(resizedBase64);
@@ -130,7 +126,6 @@ export default function ToolForm({
       description: description.trim(),
       shelfId: selectedShelfId,
       boxId: location === "box" ? selectedBoxId : null,
-      imageId: initialTool?.imageId,
       imageBase64: imageBase64 ?? null,
     };
 
@@ -246,7 +241,7 @@ export default function ToolForm({
           }}
         >
           <img
-            src={imageUrl ?? "/placeholder.png"}
+            src={imageUrl ?? `${import.meta.env.BASE_URL}placeholder.png`}
             alt="Werkzeugbild"
             style={{
               width: 80,
