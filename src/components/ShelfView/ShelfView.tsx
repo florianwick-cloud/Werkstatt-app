@@ -202,7 +202,7 @@ export default function ShelfView({
           onSave={(toolInput) => {
             // Bild ist bereits als imageBase64 im ToolInput enthalten
             if (initialTool) {
-              onEditTool(toolInput);
+              onEditTool({ ...toolInput, id: initialTool.id });
             } else {
               onAddTool(toolInput);
             }

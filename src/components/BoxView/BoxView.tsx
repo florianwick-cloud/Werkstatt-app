@@ -162,7 +162,7 @@ export default function BoxView({
           boxes={boxes}
           onSave={(toolInput) => {
             if (initialTool) {
-              onEditTool(toolInput);
+              onEditTool({ ...toolInput, id: initialTool.id });
             } else {
               onAddTool(toolInput);
             }
