@@ -3,19 +3,27 @@
   <head>
     <meta charset="UTF-8" />
 
-    <!-- Basis-Favicon (optional, wird vom PWA-Plugin ergänzt) -->
-    <link rel="icon" type="image/svg+xml" href="/Werkstatt-app/vite.svg" />
-
-    <!-- Viewport -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>Werkstatt Manager</title>
+
+    <!-- Manifest -->
+    <link rel="manifest" href="/Werkstatt-app-Flo/manifest.webmanifest">
+
+    <!-- iOS App Icon -->
+    <link rel="apple-touch-icon" href="/Werkstatt-app-Flo/apple-touch-icon.png">
+
+    <!-- Theme Color für Statusbar -->
+    <meta name="theme-color" content="#ffffff">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/Werkstatt-app-Flo/vite.svg" />
   </head>
 
   <body>
     <div id="root"></div>
 
-    <!-- Vite lädt immer aus /src/ -->
+    <!-- Vite Entry -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

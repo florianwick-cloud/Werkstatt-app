@@ -1,26 +1,26 @@
 {
-  "name": "Werkstatt App",
+  "name": "Werkstatt",
   "short_name": "Werkstatt",
-  "description": "Offline Werkstattverwaltung",
-  "start_url": "/Werkstatt-app/",
-  "scope": "/Werkstatt-app/",
+  "description": "Deine persönliche Werkstatt-App",
+  "start_url": "/Werkstatt-app-Flo/",
+  "scope": "/Werkstatt-app-Flo/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#1e1e1e",
+  "theme_color": "#ffffff",
   "icons": [
     {
-      "src": "/Werkstatt-app/icon-192.png",
+      "src": "/Werkstatt-app-Flo/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/Werkstatt-app-Flo/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/Werkstatt-app/icon-512.png",
+      "src": "/Werkstatt-app-Flo/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
-    },
-    {
-      "src": "/Werkstatt-app/apple-touch-icon.png",
-      "sizes": "180x180",
       "type": "image/png"
     }
   ]

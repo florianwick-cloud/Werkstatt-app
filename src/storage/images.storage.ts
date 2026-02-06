@@ -22,9 +22,15 @@ export async function saveImage(base64: string): Promise<string> {
   const db = await openDB();
   const id = crypto.randomUUID();
 
-  await db.put(STORE, { id, base64 });
+  const tx = db.transaction(STORE, "readwrite");
+  const store = tx.objectStore(STORE);
 
-  return id;
+  store.put({ id, base64 }, id);
+
+  return new Promise((resolve, reject) => {
+    tx.oncomplete = () => resolve(id);
+    tx.onerror = () => reject(tx.error);
+  });
 }
 
 /* =========================
@@ -32,7 +38,16 @@ export async function saveImage(base64: string): Promise<string> {
    ========================= */
 export async function updateImage(id: string, base64: string): Promise<void> {
   const db = await openDB();
-  await db.put(STORE, { id, base64 });
+
+  const tx = db.transaction(STORE, "readwrite");
+  const store = tx.objectStore(STORE);
+
+  store.put({ id, base64 }, id);
+
+  return new Promise((resolve, reject) => {
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
 }
 
 /* =========================
@@ -40,8 +55,16 @@ export async function updateImage(id: string, base64: string): Promise<void> {
    ========================= */
 export async function loadImage(id: string): Promise<string | null> {
   const db = await openDB();
-  const entry = await db.get(STORE, id);
-  return entry?.base64 ?? null;
+
+  const tx = db.transaction(STORE, "readonly");
+  const store = tx.objectStore(STORE);
+
+  const request = store.get(id);
+
+  return new Promise((resolve) => {
+    request.onsuccess = () => resolve(request.result?.base64 ?? null);
+    request.onerror = () => resolve(null);
+  });
 }
 
 /* =========================
@@ -49,5 +72,14 @@ export async function loadImage(id: string): Promise<string | null> {
    ========================= */
 export async function deleteImage(id: string): Promise<void> {
   const db = await openDB();
-  await db.delete(STORE, id);
+
+  const tx = db.transaction(STORE, "readwrite");
+  const store = tx.objectStore(STORE);
+
+  store.delete(id);
+
+  return new Promise((resolve, reject) => {
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
 }

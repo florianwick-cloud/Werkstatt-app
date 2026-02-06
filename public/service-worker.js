@@ -1,4 +1,3 @@
-// Leerer Service Worker, der ALLE alten Caches löscht
 self.addEventListener("install", () => self.skipWaiting());
 
 self.addEventListener("activate", (event) => {
@@ -7,4 +6,5 @@ self.addEventListener("activate", (event) => {
       Promise.all(keys.map((key) => caches.delete(key)))
     )
   );
+  self.clients.claim();
 });
