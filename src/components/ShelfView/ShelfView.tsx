@@ -165,7 +165,7 @@ export default function ShelfView({
         <QRScanner
           onScan={(value) => {
             setShowQRScanner(false);
-            window.location.href = value; // URL direkt öffnen
+            window.location.href = `${window.location.origin}/Werkstatt-app-Flo/${value}`; // URL direkt öffnen
           }}
           onClose={() => setShowQRScanner(false)}
         />
