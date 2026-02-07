@@ -4,8 +4,8 @@ import * as QRCode from "qrcode";
 type LabelSize = "small" | "medium" | "large";
 
 type Props = {
-  id: string;          
-  name: string;        
+  id: string;
+  name: string;
   type: "shelf" | "box";
   location?: string;
   size?: LabelSize;
@@ -36,13 +36,10 @@ export default function QRLabel({
   const [qrPng, setQrPng] = useState<string | null>(null);
 
   // -------------------------------------------------------------
-  // QR-CODE GENERIEREN (GitHub Pages kompatibel)
+  // QR-CODE GENERIEREN (nur Hash-Link!)
   // -------------------------------------------------------------
   const generateQr = async () => {
-    // Wichtig: GitHub Pages benötigt den Repo-Namen im Pfad
-    const baseUrl = `${window.location.origin}/Werkstatt-app-Flo`;
-
-    const url = `${baseUrl}/#/${type}/${id}`;
+    const url = `#/${type}/${id}`; // <<< WICHTIG: nur Hash!
 
     const png = await QRCode.toDataURL(url, {
       width: 1024,
@@ -91,21 +88,6 @@ export default function QRLabel({
     }
 
     const dataUrl = canvas.toDataURL("image/png");
-
-    if (navigator.share && "canShare" in navigator) {
-      const blob = await (await fetch(dataUrl)).blob();
-      const file = new File([blob], `${name}.png`, { type: "image/png" });
-
-      try {
-        await navigator.share({
-          title: name,
-          files: [file],
-        });
-        return;
-      } catch (err) {
-        console.log("Share failed, fallback to download", err);
-      }
-    }
 
     const link = document.createElement("a");
     link.href = dataUrl;
