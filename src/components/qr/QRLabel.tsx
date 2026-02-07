@@ -4,9 +4,9 @@ import * as QRCode from "qrcode";
 type LabelSize = "small" | "medium" | "large";
 
 type Props = {
-  id: string;          // Regal- oder Box-ID
-  name: string;        // Anzeigename
-  type: "shelf" | "box"; // Art des QR-Codes
+  id: string;          
+  name: string;        
+  type: "shelf" | "box";
   location?: string;
   size?: LabelSize;
 };
@@ -36,10 +36,12 @@ export default function QRLabel({
   const [qrPng, setQrPng] = useState<string | null>(null);
 
   // -------------------------------------------------------------
-  // QR-CODE GENERIEREN (URL-basiert)
+  // QR-CODE GENERIEREN (GitHub Pages kompatibel)
   // -------------------------------------------------------------
   const generateQr = async () => {
-    const baseUrl = window.location.origin; // lokal + deployed automatisch
+    // Wichtig: GitHub Pages benötigt den Repo-Namen im Pfad
+    const baseUrl = `${window.location.origin}/Werkstatt-app-Flo`;
+
     const url = `${baseUrl}/#/${type}/${id}`;
 
     const png = await QRCode.toDataURL(url, {
