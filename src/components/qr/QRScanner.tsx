@@ -16,17 +16,17 @@ export default function QRScanner({ onScan, onClose }: Props) {
     const config = { fps: 10, qrbox: 250 };
 
     const onSuccess = (decodedText: string) => {
-      onScan(decodedText);
+      onScan(decodedText);   // URL direkt weitergeben
       stopScanner();
     };
 
     const startScanner = async () => {
       try {
         await scanner.start(
-          { facingMode: "environment" }, // Kamera
-          config,                        // Scan-Konfiguration
-          onSuccess,                     // Erfolgs-Callback
-          (errorMessage) => {            // Fehler-Callback (Pflicht)
+          { facingMode: "environment" },
+          config,
+          onSuccess,
+          (errorMessage) => {
             console.warn("QR scan error:", errorMessage);
           }
         );
@@ -71,15 +71,17 @@ export default function QRScanner({ onScan, onClose }: Props) {
         onClick={onClose}
         style={{
           marginTop: "20px",
-          padding: "10px 20px",
+          padding: "12px 24px",
           fontSize: "16px",
           borderRadius: "8px",
           border: "none",
-          background: "#fff",
+          background: "#ff7a00",   // dein Orange
+          color: "white",
+          fontWeight: 600,
           cursor: "pointer",
         }}
       >
-        Schließen
+        Abbrechen
       </button>
     </div>
   );

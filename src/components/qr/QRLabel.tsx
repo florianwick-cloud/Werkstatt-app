@@ -4,8 +4,9 @@ import * as QRCode from "qrcode";
 type LabelSize = "small" | "medium" | "large";
 
 type Props = {
-  boxId: string;
-  boxName: string;
+  id: string;          // Regal- oder Box-ID
+  name: string;        // Anzeigename
+  type: "shelf" | "box"; // Art des QR-Codes
   location?: string;
   size?: LabelSize;
 };
@@ -25,22 +26,33 @@ const SCREEN_SIZE_MAP: Record<LabelSize, number> = {
 };
 
 export default function QRLabel({
-  boxId,
-  boxName,
+  id,
+  name,
+  type,
   location,
   size = "medium",
 }: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
   const [qrPng, setQrPng] = useState<string | null>(null);
 
+  // -------------------------------------------------------------
+  // QR-CODE GENERIEREN (URL-basiert)
+  // -------------------------------------------------------------
   const generateQr = async () => {
-    const png = await QRCode.toDataURL(`box:${boxId}`, {
+    const baseUrl = window.location.origin; // lokal + deployed automatisch
+    const url = `${baseUrl}/#/${type}/${id}`;
+
+    const png = await QRCode.toDataURL(url, {
       width: 1024,
       margin: 1,
     });
+
     setQrPng(png);
   };
 
+  // -------------------------------------------------------------
+  // PNG EXPORT
+  // -------------------------------------------------------------
   const exportLabel = async () => {
     if (!ref.current || !qrPng) return;
 
@@ -68,7 +80,7 @@ export default function QRLabel({
     ctx.fillStyle = "#222";
     ctx.font = `${Math.round(targetWidth * 0.12)}px system-ui`;
     ctx.textAlign = "center";
-    ctx.fillText(boxName, targetWidth / 2, qrSize + 60);
+    ctx.fillText(name, targetWidth / 2, qrSize + 60);
 
     if (location) {
       ctx.fillStyle = "#666";
@@ -80,11 +92,11 @@ export default function QRLabel({
 
     if (navigator.share && "canShare" in navigator) {
       const blob = await (await fetch(dataUrl)).blob();
-      const file = new File([blob], `${boxName}.png`, { type: "image/png" });
+      const file = new File([blob], `${name}.png`, { type: "image/png" });
 
       try {
         await navigator.share({
-          title: boxName,
+          title: name,
           files: [file],
         });
         return;
@@ -95,7 +107,7 @@ export default function QRLabel({
 
     const link = document.createElement("a");
     link.href = dataUrl;
-    link.download = `${boxName}.png`;
+    link.download = `${name}.png`;
     link.click();
   };
 
@@ -145,7 +157,7 @@ export default function QRLabel({
             color: "#222",
           }}
         >
-          {boxName}
+          {name}
         </div>
 
         {location && (

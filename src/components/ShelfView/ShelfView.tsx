@@ -1,5 +1,3 @@
-// src/views/shelf/ShelfView.tsx
-
 import { useState } from "react";
 import type { Shelf, Box, Tool, Material } from "../../types/models";
 
@@ -28,7 +26,6 @@ type Props = {
   onEditBox: (box: Box) => void;
   onDeleteBox: (id: string) => void;
 
-  // Nur noch Tool-Daten, kein Blob/Image-Store mehr
   onAddTool: (toolInput: any) => void;
   onEditTool: (toolInput: any) => void;
   onDeleteTool: (id: string) => void;
@@ -146,8 +143,9 @@ export default function ShelfView({
         <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4">
           <div className="bg-white p-4 rounded-xl max-w-[90%]">
             <QRLabel
-              boxId={shelf.id}
-              boxName={shelf.name}
+              id={shelf.id}
+              name={shelf.name}
+              type="shelf"
               location="Regal"
               size="medium"
             />
@@ -167,8 +165,7 @@ export default function ShelfView({
         <QRScanner
           onScan={(value) => {
             setShowQRScanner(false);
-            const id = value.includes(":") ? value.split(":")[1] : value;
-            window.location.href = `#/shelf/${id}`;
+            window.location.href = value; // URL direkt öffnen
           }}
           onClose={() => setShowQRScanner(false)}
         />
@@ -200,7 +197,6 @@ export default function ShelfView({
           shelves={shelves}
           boxes={boxes}
           onSave={(toolInput) => {
-            // Bild ist bereits als imageBase64 im ToolInput enthalten
             if (initialTool) {
               onEditTool({ ...toolInput, id: initialTool.id });
             } else {

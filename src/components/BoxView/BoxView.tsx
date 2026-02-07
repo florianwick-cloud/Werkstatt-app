@@ -126,8 +126,9 @@ export default function BoxView({
         <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4">
           <div className="bg-white p-4 rounded-xl max-w-[90%]">
             <QRLabel
-              boxId={box.id}
-              boxName={box.name}
+              id={box.id}
+              name={box.name}
+              type="box"
               location="Box"
               size="medium"
             />
@@ -146,9 +147,8 @@ export default function BoxView({
       {showQRScanner && (
         <QRScanner
           onScan={(value) => {
-            setShowQRScanner(false);
-            const id = value.includes(":") ? value.split(":")[1] : value;
-            window.location.href = `#/box/${id}`;
+          setShowQRScanner(false);
+          window.location.href = value;
           }}
           onClose={() => setShowQRScanner(false)}
         />
