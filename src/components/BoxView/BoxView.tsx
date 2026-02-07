@@ -148,7 +148,7 @@ export default function BoxView({
         <QRScanner
           onScan={(value) => {
           setShowQRScanner(false);
-          window.location.href = `${window.location.origin}/Werkstatt-app-Flo/${value}`;
+          window.location.href = `${window.location.origin}/Werkstatt-app-Flo/${value.replace(/^#/, "")}`;
           }}
           onClose={() => setShowQRScanner(false)}
         />
