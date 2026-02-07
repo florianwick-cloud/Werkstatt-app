@@ -27,7 +27,6 @@ type Props = {
   onAddShelf: (shelf: Omit<Shelf, "id">) => void;
   onAddBox: (box: Omit<Box, "id">) => void;
 
-  // ⭐ NEUE SIGNATUR: KEIN Blob mehr
   onAddTool: (tool: Omit<Tool, "id">) => void;
 
   onAddMaterial: (material: Omit<Material, "id">) => void;
@@ -66,9 +65,14 @@ export default function WorkshopView({
   const [initialTool, setInitialTool] = useState<Tool | null>(null);
   const [initialMaterial, setInitialMaterial] = useState<Material | null>(null);
 
+  // ⭐ KORRIGIERTER QR-SCAN-HANDLER
   function handleScan(value: string) {
     setShowScanner(false);
-    navigate(`/shelf/${value}`);
+
+    // value = "#/shelf/<id>"
+    const clean = value.replace(/^#/, ""); // → "/shelf/<id>"
+
+    navigate(clean);
   }
 
   // ADD HANDLER
