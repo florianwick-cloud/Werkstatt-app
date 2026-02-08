@@ -45,42 +45,8 @@ export default function App() {
       const toolsRaw = await readAll<Tool>("tools");
       const materials = await readAll<Material>("materials");
 
-      const imageStore = db.transaction("images", "readonly").objectStore("images");
-
-      const toolsWithImages = await Promise.all(
-        toolsRaw.map(
-          (tool) =>
-            new Promise<Tool>((resolve) => {
-              if (!tool.imageId) {
-                resolve({ ...tool, imageUrl: null });
-                return;
-              }
-
-              const req = imageStore.get(tool.imageId);
-              req.onsuccess = () => {
-                const entry = req.result;
-
-                if (entry && typeof entry.base64 === "string") {
-                  resolve({
-                    ...tool,
-                    imageUrl: entry.base64,
-                  });
-                } else {
-                  resolve({
-                    ...tool,
-                    imageUrl: null,
-                  });
-                }
-              };
-
-              req.onerror = () =>
-                resolve({
-                  ...tool,
-                  imageUrl: null,
-                });
-            })
-        )
-      );
+      // 🔥 Tools unverändert übernehmen (imageBase64 ist bereits im Tool)
+      const toolsWithImages = toolsRaw;
 
       if (isCancelled) return;
 
@@ -176,24 +142,15 @@ export default function App() {
               const id = crypto.randomUUID();
 
               // -------------------------------------------------------------
-              // 1. BILD SPEICHERN (mit Debug)
+              // 1. BILD SPEICHERN
               // -------------------------------------------------------------
               let imageId: string | undefined = undefined;
 
               if (toolInput.imageBase64) {
                 const db = await openDB();
-
-                console.log("🔍 DEBUG: DB Stores beim Speichern:", Array.from(db.objectStoreNames));
-
                 const tx = db.transaction("images", "readwrite");
-                console.log("🔍 DEBUG: Transaction mode:", tx.mode);
-
                 const store = tx.objectStore("images");
-                console.log("🔍 DEBUG: Store:", store);
-                console.log("🔍 DEBUG: Store.put existiert:", typeof store.put);
-
                 store.put({ base64: toolInput.imageBase64 }, id);
-
                 imageId = id;
               }
 
