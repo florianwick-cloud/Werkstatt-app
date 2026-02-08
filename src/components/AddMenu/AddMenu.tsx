@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { exportDataAsZip, importDataFromFile } from "../../exportImport/dataexportImport";
+import { generateQrPdf } from "../../exportImport/qrPdf";
 
 type Context = "workshop" | "shelf" | "box";
 
@@ -23,6 +25,7 @@ export default function AddMenu({
   className = "",
 }: Props) {
   const [open, setOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   function toggle(e: React.MouseEvent) {
     e.stopPropagation();
@@ -31,6 +34,36 @@ export default function AddMenu({
 
   function closeMenu() {
     setOpen(false);
+  }
+
+  async function handleExport() {
+    await exportDataAsZip();
+    closeMenu();
+  }
+
+  function handleImportClick() {
+    fileInputRef.current?.click();
+  }
+
+  async function handleImportFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      await importDataFromFile(file);
+      alert("Daten erfolgreich importiert. Bitte Seite neu laden.");
+    } catch (err) {
+      console.error(err);
+      alert("Fehler beim Import.");
+    } finally {
+      e.target.value = "";
+      closeMenu();
+    }
+  }
+
+  async function handleQrPdf() {
+    await generateQrPdf();
+    closeMenu();
   }
 
   return (
@@ -69,10 +102,11 @@ export default function AddMenu({
             padding: "0.5rem",
             boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
             zIndex: 9999,
-            minWidth: "180px",
+            minWidth: "200px",
             color: "black",
           }}
         >
+          {/* WORKSHOP-AKTIONEN */}
           {context === "workshop" && (
             <>
               <MenuItem
@@ -106,9 +140,20 @@ export default function AddMenu({
                   closeMenu();
                 }}
               />
+
+              {/* TRENNLINIE */}
+              <hr style={{ margin: "0.5rem 0", borderColor: "#eee" }} />
+
+              {/* ⭐ NEUE FUNKTIONEN ⭐ */}
+              <MenuItem label="Daten exportieren (ZIP)" onClick={handleExport} />
+
+              <MenuItem label="Daten importieren (ZIP)" onClick={handleImportClick} />
+
+              <MenuItem label="QR-Codes drucken (PDF)" onClick={handleQrPdf} />
             </>
           )}
 
+          {/* SHELF-AKTIONEN */}
           {context === "shelf" && (
             <>
               <MenuItem
@@ -137,6 +182,7 @@ export default function AddMenu({
             </>
           )}
 
+          {/* BOX-AKTIONEN */}
           {context === "box" && (
             <>
               <MenuItem
@@ -156,6 +202,15 @@ export default function AddMenu({
               />
             </>
           )}
+
+          {/* Hidden File Input für Import */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".zip"
+            style={{ display: "none" }}
+            onChange={handleImportFileChange}
+          />
         </div>
       )}
     </div>
