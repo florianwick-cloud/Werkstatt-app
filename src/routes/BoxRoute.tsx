@@ -2,8 +2,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import type { Shelf, Box, Tool, Material } from "../types/models";
 import type { DbAdd, DbPut, DbDelete } from "../types/db";
 import BoxView from "../components/BoxView/BoxView";
-import { openDB } from "../storage/db";
-import { saveImage, updateImage } from "../storage/images.storage";
 
 type BoxRouteProps = {
   boxes: Box[];
@@ -47,84 +45,44 @@ export default function BoxRoute({
   const safeShelf = shelf;
 
   /* =========================
-     TOOL: ADD (Base64 statt Blob)
+     TOOL: ADD (nur imageBase64)
      ========================= */
-  async function onAddTool(toolInput: any) {
-    const id = crypto.randomUUID();
-
-    // 1. Bild speichern
-    let imageId: string | undefined = undefined;
-    if (toolInput.imageBase64) {
-      imageId = await saveImage(toolInput.imageBase64);
-    }
-
-    // 2. Tool speichern
+  async function onAddTool(toolInput: Omit<Tool, "id">) {
     const tool: Tool = {
-      id,
+      id: crypto.randomUUID(),
       name: toolInput.name,
-      description: toolInput.description ?? "",
+      description: toolInput.description,
       shelfId: safeShelf.id,
       boxId: safeBox.id,
-      imageId,
-      imageUrl: toolInput.imageBase64 ?? null,
+      imageBase64: toolInput.imageBase64,
     };
 
     await dbAdd("tools", tool);
-
-    // 3. UI aktualisieren
     setTools((prev) => [...prev, tool]);
   }
 
   /* =========================
-     TOOL: EDIT (Base64 statt Blob)
+     TOOL: EDIT
      ========================= */
-  async function onEditTool(toolInput: any) {
-    const oldTool = tools.find((t) => t.id === toolInput.id);
-    if (!oldTool) return;
-
-    let imageId = oldTool.imageId ?? undefined;
-
-    // 1. Bild aktualisieren oder neu speichern
-    if (toolInput.imageBase64) {
-      if (imageId) {
-        await updateImage(imageId, toolInput.imageBase64);
-      } else {
-        imageId = await saveImage(toolInput.imageBase64);
-      }
-    }
-
-    // 2. Tool aktualisieren
+  async function onEditTool(toolInput: Tool) {
     const updated: Tool = {
-      ...oldTool,
-      name: toolInput.name,
-      description: toolInput.description ?? "",
+      ...toolInput,
       shelfId: safeShelf.id,
       boxId: safeBox.id,
-      imageId,
-      imageUrl: toolInput.imageBase64 ?? oldTool.imageUrl ?? null,
+      imageBase64: toolInput.imageBase64 ?? null,
     };
 
     await dbPut("tools", updated);
 
-    // 3. UI aktualisieren
     setTools((prev) =>
       prev.map((t) => (t.id === updated.id ? updated : t))
     );
   }
 
   /* =========================
-     TOOL: DELETE (inkl. Bild)
+     TOOL: DELETE
      ========================= */
   async function onDeleteTool(id: string) {
-    const tool = tools.find((t) => t.id === id);
-
-    if (tool?.imageId) {
-      const db = await openDB();
-      db.transaction("images", "readwrite")
-        .objectStore("images")
-        .delete(tool.imageId);
-    }
-
     await dbDelete("tools", id);
     setTools((prev) => prev.filter((t) => t.id !== id));
   }

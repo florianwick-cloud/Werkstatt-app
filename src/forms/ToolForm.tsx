@@ -1,13 +1,13 @@
 import { useState, useEffect, type ChangeEvent } from "react";
 import type { Tool, Shelf, Box } from "../types/models";
 
+// KORREKTER Input-Typ für Omit<Tool, "id">
 type ToolInput = {
-  id?: string;
   name: string;
-  description?: string;
+  description: string;
   shelfId: string;
   boxId: string | null;
-  imageBase64?: string | null;
+  imageBase64: string | null;
 };
 
 type Props = {
@@ -40,9 +40,8 @@ export default function ToolForm({
     initialTool?.boxId ?? null
   );
 
-  // Falls initialTool.imageUrl noch eine alte Blob-URL ist → ignorieren
-  const initialImage =
-    initialTool?.imageUrl?.startsWith("blob:") ? null : initialTool?.imageUrl ?? null;
+  // Bild initialisieren (nur imageBase64)
+  const initialImage = initialTool?.imageBase64 ?? null;
 
   const [imageUrl, setImageUrl] = useState<string | null>(initialImage);
   const [imageBase64, setImageBase64] = useState<string | null>(initialImage);
@@ -121,7 +120,6 @@ export default function ToolForm({
     if (location === "box" && !selectedBoxId) return;
 
     const toolInput: ToolInput = {
-      id: initialTool?.id,
       name: name.trim(),
       description: description.trim(),
       shelfId: selectedShelfId,
@@ -215,7 +213,7 @@ export default function ToolForm({
       <textarea
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        placeholder="Beschreibung (optional)"
+        placeholder="Beschreibung"
         style={{
           width: "100%",
           padding: "0.5rem",

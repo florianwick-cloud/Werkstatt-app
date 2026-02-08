@@ -42,17 +42,14 @@ export default function App() {
 
       const shelves = await readAll<Shelf>("shelves");
       const boxes = await readAll<Box>("boxes");
-      const toolsRaw = await readAll<Tool>("tools");
+      const tools = await readAll<Tool>("tools");
       const materials = await readAll<Material>("materials");
-
-      // 🔥 Tools unverändert übernehmen (imageBase64 ist bereits im Tool)
-      const toolsWithImages = toolsRaw;
 
       if (isCancelled) return;
 
       setShelves(shelves);
       setBoxes(boxes);
-      setTools(toolsWithImages);
+      setTools(tools);
       setMaterials(materials);
 
       setIsLoaded(true);
@@ -142,20 +139,7 @@ export default function App() {
               const id = crypto.randomUUID();
 
               // -------------------------------------------------------------
-              // 1. BILD SPEICHERN
-              // -------------------------------------------------------------
-              let imageId: string | undefined = undefined;
-
-              if (toolInput.imageBase64) {
-                const db = await openDB();
-                const tx = db.transaction("images", "readwrite");
-                const store = tx.objectStore("images");
-                store.put({ base64: toolInput.imageBase64 }, id);
-                imageId = id;
-              }
-
-              // -------------------------------------------------------------
-              // 2. TOOL SPEICHERN
+              // TOOL SPEICHERN (Bild direkt im Tool)
               // -------------------------------------------------------------
               const tool: Tool = {
                 id,
@@ -163,15 +147,10 @@ export default function App() {
                 description: toolInput.description ?? "",
                 shelfId: toolInput.shelfId,
                 boxId: toolInput.boxId,
-                imageId,
-                imageUrl: toolInput.imageBase64 ?? null,
+                imageBase64: toolInput.imageBase64 ?? null,
               };
 
               await dbAdd("tools", tool);
-
-              // -------------------------------------------------------------
-              // 3. UI AKTUALISIEREN
-              // -------------------------------------------------------------
               setTools((p) => [...p, tool]);
             }}
             onAddMaterial={async (data) => {

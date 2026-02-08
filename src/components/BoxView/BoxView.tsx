@@ -11,6 +11,14 @@ import MaterialForm from "../../forms/MaterialForm";
 import QRLabel from "../qr/QRLabel";
 import QRScanner from "../qr/QRScanner";
 
+type ToolInput = {
+  name: string;
+  description: string;
+  shelfId: string;
+  boxId: string | null;
+  imageBase64: string | null;
+};
+
 type Props = {
   shelf: Shelf;
   box: Box;
@@ -23,9 +31,8 @@ type Props = {
 
   onBack: () => void;
 
-  // ⭐ Neue Signatur: KEIN Blob mehr
-  onAddTool: (toolInput: any) => void;
-  onEditTool: (toolInput: any) => void;
+  onAddTool: (tool: ToolInput) => void;
+  onEditTool: (tool: Tool) => void;
   onDeleteTool: (id: string) => void;
 
   onAddMaterial: (material: Omit<Material, "id">) => void;
@@ -147,8 +154,8 @@ export default function BoxView({
       {showQRScanner && (
         <QRScanner
           onScan={(value) => {
-          setShowQRScanner(false);
-          window.location.href = `${window.location.origin}/Werkstatt-app-Flo/${value.replace(/^#/, "")}`;
+            setShowQRScanner(false);
+            window.location.href = `${window.location.origin}/Werkstatt-app-Flo/${value.replace(/^#/, "")}`;
           }}
           onClose={() => setShowQRScanner(false)}
         />
@@ -162,7 +169,7 @@ export default function BoxView({
           boxes={boxes}
           onSave={(toolInput) => {
             if (initialTool) {
-              onEditTool({ ...toolInput, id: initialTool.id });
+              onEditTool({ ...initialTool, ...toolInput });
             } else {
               onAddTool(toolInput);
             }

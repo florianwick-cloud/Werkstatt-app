@@ -47,21 +47,26 @@ export default function ShelfTools({
             background: "#fff",
           }}
         >
+          {/* Thumbnail */}
           <img
-            src={tool.imageUrl ?? "/placeholder.png"}
+            src={tool.imageBase64 ?? "/placeholder.png"}
             alt={tool.name}
-            onClick={() => tool.imageUrl && setSelectedImage(tool.imageUrl)}
+            onClick={() =>
+              tool.imageBase64 && setSelectedImage(tool.imageBase64)
+            }
             style={{
               width: 40,
               height: 40,
               objectFit: "cover",
               borderRadius: "6px",
-              cursor: tool.imageUrl ? "pointer" : "default",
+              cursor: tool.imageBase64 ? "pointer" : "default",
             }}
           />
 
+          {/* Name */}
           <span style={{ fontWeight: 600, flex: 1 }}>{tool.name}</span>
 
+          {/* Aktionen */}
           <div style={{ display: "flex", gap: "0.5rem" }}>
             <button
               onClick={() => onEditTool(tool)}
@@ -100,6 +105,7 @@ export default function ShelfTools({
         </div>
       ))}
 
+      {/* Modal */}
       {selectedImage && (
         <div
           onClick={() => setSelectedImage(null)}
@@ -114,6 +120,7 @@ export default function ShelfTools({
             zIndex: 9999,
           }}
         >
+          {/* Close Button */}
           <button
             onClick={(e) => {
               e.stopPropagation();

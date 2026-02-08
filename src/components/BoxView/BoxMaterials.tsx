@@ -31,9 +31,7 @@ export default function BoxMaterials({
         <MaterialItem
           key={material.id}
           material={material}
-          onEdit={(m) => {
-            onEditMaterial(m);
-          }}
+          onEdit={(m) => onEditMaterial(m)}
           onDelete={onDeleteMaterial}
         />
       ))}

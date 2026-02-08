@@ -23,7 +23,7 @@ export type Box = {
 export type Tool = {
   id: string;
   name: string;
-  description?: string;
+  description: string;
 
   shelfId: string;
   boxId: string | null;
@@ -31,9 +31,8 @@ export type Tool = {
   /**
    * EINZIGES Bildfeld:
    * Base64-String für <img src="...">
-   * iOS-sicher, offline-sicher, PWA-sicher.
    */
-  imageBase64?: string | null;
+  imageBase64: string | null;
 };
 
 /* =========================
@@ -46,9 +45,10 @@ export type Material = {
   unit: string;
 
   /**
-   * Auch hier: nur Base64.
+   * EINZIGES Bildfeld:
+   * Base64-String für <img src="...">
    */
-  imageBase64?: string | null;
+  imageBase64: string | null;
 
   shelfId: string;
   boxId: string | null;

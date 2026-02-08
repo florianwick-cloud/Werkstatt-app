@@ -27,6 +27,7 @@ export default function ShelfInfo({
       {boxes.map((box) => (
         <div
           key={box.id}
+          onClick={() => onOpenBox(box.id)}
           style={{
             padding: "0.5rem",
             border: "1px solid #ddd",
@@ -37,16 +38,20 @@ export default function ShelfInfo({
             alignItems: "center",
             gap: "1rem",
             background: "#fff",
+            cursor: "pointer",
           }}
         >
-          <span
-            style={{ cursor: "pointer", fontWeight: 600 }}
-            onClick={() => onOpenBox(box.id)}
-          >
+          {/* Name */}
+          <span style={{ fontWeight: 600 }}>
             📦 {box.name}
           </span>
 
-          <div style={{ display: "flex", gap: "0.5rem" }}>
+          {/* Aktionen */}
+          <div
+            style={{ display: "flex", gap: "0.5rem" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Bearbeiten */}
             <button
               onClick={() => onEditBox(box)}
               style={{
@@ -64,6 +69,7 @@ export default function ShelfInfo({
               <Pencil size={18} strokeWidth={2} />
             </button>
 
+            {/* Löschen */}
             <button
               onClick={() => onDeleteBox(box.id)}
               style={{

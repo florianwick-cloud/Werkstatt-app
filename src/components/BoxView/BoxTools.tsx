@@ -47,15 +47,17 @@ export default function BoxTools({
         >
           {/* Thumbnail */}
           <img
-            src={tool.imageUrl ?? "/placeholder.png"}
+            src={tool.imageBase64 ?? "/placeholder.png"}
             alt={tool.name}
-            onClick={() => tool.imageUrl && setSelectedImage(tool.imageUrl)}
+            onClick={() =>
+              tool.imageBase64 && setSelectedImage(tool.imageBase64)
+            }
             style={{
               width: 40,
               height: 40,
               objectFit: "cover",
               borderRadius: "6px",
-              cursor: tool.imageUrl ? "pointer" : "default",
+              cursor: tool.imageBase64 ? "pointer" : "default",
             }}
           />
 

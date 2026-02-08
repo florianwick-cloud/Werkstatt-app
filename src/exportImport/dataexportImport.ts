@@ -5,40 +5,30 @@ import { getAllBoxes } from "../storage/boxes.storage";
 import { getAllMaterials } from "../storage/materials.storage";
 import { getAllTools } from "../storage/tools.storage";
 import { openDB } from "../storage/db";
-import { getAllImages, saveImage } from "../storage/images.storage";
 
 // -----------------------------------------------------
 // EXPORT
 // -----------------------------------------------------
 export async function exportDataAsZip() {
-  const [shelves, boxes, materials, tools, images] = await Promise.all([
+  const [shelves, boxes, materials, tools] = await Promise.all([
     getAllShelves(),
     getAllBoxes(),
     getAllMaterials(),
     getAllTools(),
-    getAllImages(), // { id, data }
   ]);
 
   const zip = new JSZip();
 
-  // JSON ohne Bilder
   const payload = {
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
     shelves,
     boxes,
     materials,
-    tools,
+    tools, // enthält imageBase64 direkt im Tool
   };
 
   zip.file("data.json", JSON.stringify(payload, null, 2));
-
-  // Bilder separat
-  const imgFolder = zip.folder("images");
-
-  for (const img of images) {
-    imgFolder?.file(`${img.id}.txt`, img.data);
-  }
 
   const blob = await zip.generateAsync({ type: "blob" });
 
@@ -68,7 +58,6 @@ export async function importDataFromFile(file: File): Promise<void> {
     clearStore("boxes"),
     clearStore("materials"),
     clearStore("tools"),
-    clearStore("images"),
   ]);
 
   // JSON-Daten schreiben
@@ -92,22 +81,6 @@ export async function importDataFromFile(file: File): Promise<void> {
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
   });
-
-  // Bilder importieren
-  const imgFolder = zip.folder("images");
-  if (imgFolder) {
-    const files = Object.keys(imgFolder.files);
-
-    for (const fileName of files) {
-      const file = imgFolder.file(fileName);
-      if (!file) continue;
-
-      const content = await file.async("string");
-      const id = fileName.replace(".txt", "");
-
-      await saveImage(id, content);
-    }
-  }
 }
 
 // -----------------------------------------------------

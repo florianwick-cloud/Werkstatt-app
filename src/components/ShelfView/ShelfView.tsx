@@ -13,6 +13,14 @@ import MaterialForm from "../../forms/MaterialForm";
 import QRLabel from "../qr/QRLabel";
 import QRScanner from "../qr/QRScanner";
 
+type ToolInput = {
+  name: string;
+  description: string;
+  shelfId: string;
+  boxId: string | null;
+  imageBase64: string | null;
+};
+
 type Props = {
   shelf: Shelf;
   shelves: Shelf[];
@@ -26,8 +34,8 @@ type Props = {
   onEditBox: (box: Box) => void;
   onDeleteBox: (id: string) => void;
 
-  onAddTool: (toolInput: any) => void;
-  onEditTool: (toolInput: any) => void;
+  onAddTool: (tool: ToolInput) => void;
+  onEditTool: (tool: Tool) => void;
   onDeleteTool: (id: string) => void;
 
   onAddMaterial: (material: Omit<Material, "id">) => void;
@@ -198,7 +206,7 @@ export default function ShelfView({
           boxes={boxes}
           onSave={(toolInput) => {
             if (initialTool) {
-              onEditTool({ ...toolInput, id: initialTool.id });
+              onEditTool({ ...initialTool, ...toolInput });
             } else {
               onAddTool(toolInput);
             }
