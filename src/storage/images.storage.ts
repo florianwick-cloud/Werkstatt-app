@@ -16,16 +16,16 @@ export function blobToBase64(blob: Blob): Promise<string> {
 }
 
 /* =========================
-   SAVE IMAGE (BASE64)
+   SAVE IMAGE (NEU) → erzeugt ID
    ========================= */
-export async function saveImage(base64: string): Promise<string> {
+export async function saveNewImage(base64: string): Promise<string> {
   const db = await openDB();
   const id = crypto.randomUUID();
 
   const tx = db.transaction(STORE, "readwrite");
   const store = tx.objectStore(STORE);
 
-  store.put({ id, base64 }, id);
+  store.put({ id, data: base64 }, id);
 
   return new Promise((resolve, reject) => {
     tx.oncomplete = () => resolve(id);
@@ -34,20 +34,27 @@ export async function saveImage(base64: string): Promise<string> {
 }
 
 /* =========================
-   UPDATE IMAGE
+   SAVE IMAGE (MIT ID) → für IMPORT
    ========================= */
-export async function updateImage(id: string, base64: string): Promise<void> {
+export async function saveImage(id: string, base64: string): Promise<void> {
   const db = await openDB();
 
   const tx = db.transaction(STORE, "readwrite");
   const store = tx.objectStore(STORE);
 
-  store.put({ id, base64 }, id);
+  store.put({ id, data: base64 }, id);
 
   return new Promise((resolve, reject) => {
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
   });
+}
+
+/* =========================
+   UPDATE IMAGE
+   ========================= */
+export async function updateImage(id: string, base64: string): Promise<void> {
+  return saveImage(id, base64);
 }
 
 /* =========================
@@ -62,8 +69,28 @@ export async function loadImage(id: string): Promise<string | null> {
   const request = store.get(id);
 
   return new Promise((resolve) => {
-    request.onsuccess = () => resolve(request.result?.base64 ?? null);
+    request.onsuccess = () => resolve(request.result?.data ?? null);
     request.onerror = () => resolve(null);
+  });
+}
+
+/* =========================
+   GET ALL IMAGES
+   ========================= */
+export async function getAllImages(): Promise<{ id: string; data: string }[]> {
+  const db = await openDB();
+
+  const tx = db.transaction(STORE, "readonly");
+  const store = tx.objectStore(STORE);
+
+  const request = store.getAll();
+
+  return new Promise((resolve) => {
+    request.onsuccess = () => {
+      const result = request.result ?? [];
+      resolve(result.map((r: any) => ({ id: r.id, data: r.data })));
+    };
+    request.onerror = () => resolve([]);
   });
 }
 

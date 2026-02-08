@@ -1,91 +1,14 @@
 // src/exportImport/dataExportImport.ts
 import JSZip from "jszip";
-import {
-  getAllShelves,
-} from "../storage/shelves.storage";
-import {
-  getAllBoxes,
-} from "../storage/boxes.storage";
-import {
-  getAllMaterials,
-} from "../storage/materials.storage";
-import {
-  getAllTools,
-} from "../storage/tools.storage";
+import { getAllShelves } from "../storage/shelves.storage";
+import { getAllBoxes } from "../storage/boxes.storage";
+import { getAllMaterials } from "../storage/materials.storage";
+import { getAllTools } from "../storage/tools.storage";
 import { openDB } from "../storage/db";
-
-const IMAGE_STORE = "images";
-
-type ExportPayload = {
-  version: number;
-  exportedAt: string;
-  shelves: any[];
-  boxes: any[];
-  materials: any[];
-  tools: any[];
-  images: { id: string; base64: string }[];
-};
+import { getAllImages, saveImage } from "../storage/images.storage";
 
 // -----------------------------------------------------
-// HILFSFUNKTION: ALLE IMAGES LADEN
-// -----------------------------------------------------
-async function getAllImages(): Promise<{ id: string; base64: string }[]> {
-  const db = await openDB();
-
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(IMAGE_STORE, "readonly");
-    const store = tx.objectStore(IMAGE_STORE);
-    const request = store.getAll();
-
-    request.onsuccess = () => {
-      const result = (request.result ?? []) as any[];
-      const mapped = result.map((r) => ({
-        id: r.id,
-        base64: r.base64,
-      }));
-      resolve(mapped);
-    };
-
-    request.onerror = () => reject("Fehler beim Laden der Bilder");
-  });
-}
-
-// -----------------------------------------------------
-// HILFSFUNKTION: STORE LEEREN
-// -----------------------------------------------------
-async function clearStore(name: string): Promise<void> {
-  const db = await openDB();
-
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(name, "readwrite");
-    const store = tx.objectStore(name);
-    const request = store.clear();
-
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(`Fehler beim Leeren von ${name}`);
-  });
-}
-
-// -----------------------------------------------------
-// HILFSFUNKTION: IMAGES SCHREIBEN
-// -----------------------------------------------------
-async function writeImages(images: { id: string; base64: string }[]) {
-  const db = await openDB();
-  const tx = db.transaction(IMAGE_STORE, "readwrite");
-  const store = tx.objectStore(IMAGE_STORE);
-
-  for (const img of images) {
-    store.put({ id: img.id, base64: img.base64 }, img.id);
-  }
-
-  return new Promise<void>((resolve, reject) => {
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  });
-}
-
-// -----------------------------------------------------
-// EXPORT: ALLE DATEN → ZIP (data.json)
+// EXPORT
 // -----------------------------------------------------
 export async function exportDataAsZip() {
   const [shelves, boxes, materials, tools, images] = await Promise.all([
@@ -93,51 +16,53 @@ export async function exportDataAsZip() {
     getAllBoxes(),
     getAllMaterials(),
     getAllTools(),
-    getAllImages(),
+    getAllImages(), // { id, data }
   ]);
 
-  const payload: ExportPayload = {
+  const zip = new JSZip();
+
+  // JSON ohne Bilder
+  const payload = {
     version: 1,
     exportedAt: new Date().toISOString(),
     shelves,
     boxes,
     materials,
     tools,
-    images,
   };
 
-  const zip = new JSZip();
   zip.file("data.json", JSON.stringify(payload, null, 2));
+
+  // Bilder separat
+  const imgFolder = zip.folder("images");
+
+  for (const img of images) {
+    imgFolder?.file(`${img.id}.txt`, img.data);
+  }
 
   const blob = await zip.generateAsync({ type: "blob" });
 
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `workshop-backup-${new Date()
-    .toISOString()
-    .slice(0, 10)}.zip`;
-  document.body.appendChild(a);
+  a.download = `workshop-backup-${new Date().toISOString().slice(0, 10)}.zip`;
   a.click();
-  a.remove();
   URL.revokeObjectURL(url);
 }
 
 // -----------------------------------------------------
-// IMPORT: ZIP → JSON → STORES ERSETZEN
+// IMPORT
 // -----------------------------------------------------
 export async function importDataFromFile(file: File): Promise<void> {
   const zip = await JSZip.loadAsync(file);
-  const dataFile = zip.file("data.json");
 
-  if (!dataFile) {
-    throw new Error("data.json in ZIP nicht gefunden");
-  }
+  const dataFile = zip.file("data.json");
+  if (!dataFile) throw new Error("data.json fehlt");
 
   const jsonText = await dataFile.async("string");
-  const payload = JSON.parse(jsonText) as ExportPayload;
+  const payload = JSON.parse(jsonText);
 
-  // Replace-Strategie: alles leeren, dann neu schreiben
+  // Stores leeren
   await Promise.all([
     clearStore("shelves"),
     clearStore("boxes"),
@@ -146,7 +71,7 @@ export async function importDataFromFile(file: File): Promise<void> {
     clearStore("images"),
   ]);
 
-  // Shelves
+  // JSON-Daten schreiben
   const db = await openDB();
   await new Promise<void>((resolve, reject) => {
     const tx = db.transaction(
@@ -168,6 +93,33 @@ export async function importDataFromFile(file: File): Promise<void> {
     tx.onerror = () => reject(tx.error);
   });
 
-  // Images separat
-  await writeImages(payload.images ?? []);
+  // Bilder importieren
+  const imgFolder = zip.folder("images");
+  if (imgFolder) {
+    const files = Object.keys(imgFolder.files);
+
+    for (const fileName of files) {
+      const file = imgFolder.file(fileName);
+      if (!file) continue;
+
+      const content = await file.async("string");
+      const id = fileName.replace(".txt", "");
+
+      await saveImage(id, content);
+    }
+  }
+}
+
+// -----------------------------------------------------
+// STORE LEEREN
+// -----------------------------------------------------
+async function clearStore(name: string): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(name, "readwrite");
+    const store = tx.objectStore(name);
+    const req = store.clear();
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
 }
