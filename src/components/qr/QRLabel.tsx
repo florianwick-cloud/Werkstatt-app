@@ -36,22 +36,26 @@ export default function QRLabel({
   const [qrPng, setQrPng] = useState<string | null>(null);
 
   // -------------------------------------------------------------
-  // QR-CODE GENERIEREN (ABSOLUTE HASH-URL für GitHub Pages!)
-  // -------------------------------------------------------------
-  const generateQr = async () => {
-    // BASE_URL ist bei GitHub Pages immer "/<repo>/"
-    const base = (window.location.origin + import.meta.env.BASE_URL).replace(/\/+$/, "");
+// QR-CODE GENERIEREN (ABSOLUTE HASH-URL für GitHub Pages!)
+// -------------------------------------------------------------
+const generateQr = async () => {
+  // BASE_URL ist bei GitHub Pages immer "/<repo>/"
+  const baseUrl = import.meta.env.BASE_URL;
 
-    // Absolute Hash-URL erzeugen
-    const url = `${base}/#/${type}/${id}`;
+  // Saubere Base-URL erzeugen
+  const base = `${window.location.origin}${baseUrl}`.replace(/\/+$/, "");
 
-    const png = await QRCode.toDataURL(url, {
-      width: 1024,
-      margin: 1,
-    });
+  // Absolute Hash-URL erzeugen (immer korrekt!)
+  const url = `${base}/#/${type}/${id}`;
 
-    setQrPng(png);
-  };
+  const png = await QRCode.toDataURL(url, {
+    width: 1024,
+    margin: 1,
+  });
+
+  setQrPng(png);
+};
+
 
   // -------------------------------------------------------------
   // PNG EXPORT
