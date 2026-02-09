@@ -167,6 +167,8 @@ export default function BoxView({
           initialTool={initialTool ?? undefined}
           shelves={shelves}
           boxes={boxes}
+          defaultShelfId={initialTool ? initialTool.shelfId : shelf.id}   // ⬅️ NEU
+          defaultBoxId={initialTool ? initialTool.boxId : box.id}         // ⬅️ NEU
           onSave={(toolInput) => {
             if (initialTool) {
               onEditTool({ ...initialTool, ...toolInput });

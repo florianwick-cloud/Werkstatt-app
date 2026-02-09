@@ -14,6 +14,8 @@ type Props = {
   initialTool?: Tool;
   shelves: Shelf[];
   boxes: Box[];
+  defaultShelfId?: string | null;   // NEU
+  defaultBoxId?: string | null;     // NEU
   onSave: (tool: ToolInput) => void;
   onCancel: () => void;
 };
@@ -22,22 +24,31 @@ export default function ToolForm({
   initialTool,
   shelves,
   boxes,
+  defaultShelfId,
+  defaultBoxId,
   onSave,
   onCancel,
 }: Props) {
   const [name, setName] = useState(initialTool?.name ?? "");
   const [description, setDescription] = useState(initialTool?.description ?? "");
 
+  // LOCATION (Regal/Kiste)
   const [location, setLocation] = useState<"shelf" | "box">(
-    initialTool?.boxId ? "box" : "shelf"
+    initialTool?.boxId
+      ? "box"
+      : defaultBoxId
+      ? "box"
+      : "shelf"
   );
 
+  // REGAL
   const [selectedShelfId, setSelectedShelfId] = useState<string>(
-    initialTool?.shelfId ?? ""
+    initialTool?.shelfId ?? defaultShelfId ?? ""
   );
 
+  // KISTE
   const [selectedBoxId, setSelectedBoxId] = useState<string | null>(
-    initialTool?.boxId ?? null
+    initialTool?.boxId ?? defaultBoxId ?? null
   );
 
   // Bild initialisieren (nur imageBase64)
@@ -98,12 +109,14 @@ export default function ToolForm({
 
   const shelfBoxes = boxes.filter((b) => b.shelfId === selectedShelfId);
 
+  // Wenn nur 1 Regal existiert → automatisch auswählen
   useEffect(() => {
     if (!selectedShelfId && shelves.length === 1) {
       setSelectedShelfId(shelves[0].id);
     }
   }, [shelves, selectedShelfId]);
 
+  // Box-Logik
   useEffect(() => {
     if (location === "shelf") {
       setSelectedBoxId(null);
@@ -280,10 +293,12 @@ export default function ToolForm({
           onClick={onCancel}
           style={{
             flex: 1,
-            background: "#ccc",
+            background: "#ff7a00",
+            color: "white",
             border: "none",
             borderRadius: "6px",
             padding: "0.6rem",
+            fontWeight: 600,
           }}
         >
           Abbrechen
