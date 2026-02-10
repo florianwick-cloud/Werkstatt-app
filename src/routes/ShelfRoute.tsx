@@ -33,26 +33,14 @@ export default function ShelfRoute({
   const navigate = useNavigate();
   const { shelfId } = useParams<{ shelfId: string }>();
 
-  // ============================
-  // 1. Daten noch nicht geladen?
-  // ============================
-  if (!shelves.length || !boxes.length || !tools.length || !materials.length) {
-    return <div style={{ padding: "1rem" }}>Lade Daten…</div>;
-  }
-
-  // ============================
-  // 2. Shelf finden
-  // ============================
   const shelf = shelves.find((s) => s.id === shelfId);
-  if (!shelf) {
-    return <div style={{ padding: "1rem" }}>Regal nicht gefunden</div>;
-  }
+  if (!shelf) return null;
 
   const safeShelf = shelf;
 
-  // ============================
+  // -------------------------------------------------------------
   // BOXEN
-  // ============================
+  // -------------------------------------------------------------
   async function onAddBox(name: string, shelfId: string) {
     const box: Box = {
       id: crypto.randomUUID(),
@@ -76,9 +64,9 @@ export default function ShelfRoute({
     setBoxes((prev) => prev.filter((b) => b.id !== id));
   }
 
-  // ============================
-  // TOOLS
-  // ============================
+  // -------------------------------------------------------------
+  // TOOLS (nur imageBase64)
+  // -------------------------------------------------------------
   async function onAddTool(toolInput: Omit<Tool, "id">) {
     const tool: Tool = {
       id: crypto.randomUUID(),
@@ -113,9 +101,9 @@ export default function ShelfRoute({
     setTools((prev) => prev.filter((t) => t.id !== id));
   }
 
-  // ============================
+  // -------------------------------------------------------------
   // MATERIAL
-  // ============================
+  // -------------------------------------------------------------
   async function onAddMaterial(data: Omit<Material, "id">) {
     const newMaterial: Material = {
       id: crypto.randomUUID(),
@@ -146,9 +134,9 @@ export default function ShelfRoute({
     setMaterials((prev) => prev.filter((m) => m.id !== id));
   }
 
-  // ============================
+  // -------------------------------------------------------------
   // RENDER
-  // ============================
+  // -------------------------------------------------------------
   return (
     <ShelfView
       shelf={safeShelf}
