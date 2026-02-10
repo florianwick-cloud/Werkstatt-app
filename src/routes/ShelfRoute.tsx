@@ -33,8 +33,11 @@ export default function ShelfRoute({
   const navigate = useNavigate();
   const { shelfId } = useParams<{ shelfId: string }>();
 
+  // 1. Regal suchen
   const shelf = shelves.find((s) => s.id === shelfId);
-  if (!shelf) return null;
+  if (!shelf) {
+    return <div style={{ padding: "1rem" }}>Regal nicht gefunden</div>;
+  }
 
   const safeShelf = shelf;
 
@@ -65,7 +68,7 @@ export default function ShelfRoute({
   }
 
   // -------------------------------------------------------------
-  // TOOLS (nur imageBase64)
+  // TOOLS
   // -------------------------------------------------------------
   async function onAddTool(toolInput: Omit<Tool, "id">) {
     const tool: Tool = {
