@@ -7,6 +7,9 @@ type Props = {
   shelves: Shelf[];
   boxes: Box[];
 
+  defaultShelfId?: string | null;
+  defaultBoxId?: string | null;
+
   onSave: (material: Material) => void;
   onCancel: () => void;
 };
@@ -15,36 +18,58 @@ export default function MaterialForm({
   initialMaterial,
   shelves,
   boxes,
+  defaultShelfId,
+  defaultBoxId,
   onSave,
   onCancel,
 }: Props) {
+
+  // Einheitliche Button-Farbe
+  const BUTTON_COLOR = "#ff7a00";
+
+  // Alphabetische Sortierung (A1 < A10)
+  const sortedShelves = [...shelves].sort((a, b) =>
+    a.name.localeCompare(b.name, "de", { numeric: true })
+  );
+
+  const sortedBoxes = [...boxes].sort((a, b) =>
+    a.name.localeCompare(b.name, "de", { numeric: true })
+  );
+
   const [name, setName] = useState(initialMaterial?.name ?? "");
   const [quantity, setQuantity] = useState(initialMaterial?.quantity ?? 1);
   const [unit, setUnit] = useState(initialMaterial?.unit ?? "Stk");
 
+  // LOCATION (Regal/Kiste) – identisch zu ToolForm
   const [location, setLocation] = useState<"shelf" | "box">(
-    initialMaterial?.boxId ? "box" : "shelf"
+    initialMaterial?.boxId
+      ? "box"
+      : defaultBoxId
+      ? "box"
+      : "shelf"
   );
 
+  // REGAL – identisch zu ToolForm
   const [selectedShelfId, setSelectedShelfId] = useState<string>(
-    initialMaterial?.shelfId ?? ""
+    initialMaterial?.shelfId ?? defaultShelfId ?? ""
   );
 
+  // KISTE – identisch zu ToolForm
   const [selectedBoxId, setSelectedBoxId] = useState<string | null>(
-    initialMaterial?.boxId ?? null
+    initialMaterial?.boxId ?? defaultBoxId ?? null
   );
 
   // Kisten des gewählten Regals
-  const shelfBoxes = boxes.filter((b) => b.shelfId === selectedShelfId);
+  const shelfBoxes = sortedBoxes.filter((b) => b.shelfId === selectedShelfId);
 
   // Wenn nur ein Regal existiert → automatisch auswählen
   useEffect(() => {
-    if (!selectedShelfId && shelves.length === 1) {
-      setSelectedShelfId(shelves[0].id);
+    if (!selectedShelfId && sortedShelves.length === 1) {
+      setSelectedShelfId(sortedShelves[0].id);
     }
-  }, [shelves, selectedShelfId]);
+  }, [sortedShelves, selectedShelfId]);
 
-  // Box zurücksetzen wenn Ort = Regal
+  // Box-Logik – identisch zu ToolForm
   useEffect(() => {
     if (location === "shelf") {
       setSelectedBoxId(null);
@@ -79,7 +104,7 @@ export default function MaterialForm({
         border: "1px solid #ddd",
       }}
     >
-      <h3 style={{ color: "#ff7a00", marginBottom: "0.75rem" }}>
+      <h3 style={{ color: BUTTON_COLOR, marginBottom: "0.75rem" }}>
         {initialMaterial ? "Material bearbeiten" : "Material hinzufügen"}
       </h3>
 
@@ -91,7 +116,7 @@ export default function MaterialForm({
           style={{
             flex: 1,
             padding: "0.6rem",
-            background: location === "shelf" ? "#ff7a00" : "#eee",
+            background: location === "shelf" ? BUTTON_COLOR : "#eee",
             color: location === "shelf" ? "white" : "#333",
             border: "1px solid #ccc",
             borderRadius: "6px 0 0 6px",
@@ -107,7 +132,7 @@ export default function MaterialForm({
           style={{
             flex: 1,
             padding: "0.6rem",
-            background: location === "box" ? "#ff7a00" : "#eee",
+            background: location === "box" ? BUTTON_COLOR : "#eee",
             color: location === "box" ? "white" : "#333",
             border: "1px solid #ccc",
             borderRadius: "0 6px 6px 0",
@@ -125,7 +150,7 @@ export default function MaterialForm({
         style={{ width: "100%", padding: "0.5rem", marginBottom: "0.75rem" }}
       >
         <option value="">Regal wählen…</option>
-        {shelves.map((s) => (
+        {sortedShelves.map((s) => (
           <option key={s.id} value={s.id}>
             {s.name}
           </option>
@@ -177,7 +202,7 @@ export default function MaterialForm({
           onClick={handleSubmit}
           style={{
             flex: 1,
-            background: "#ff7a00",
+            background: BUTTON_COLOR,
             color: "white",
             border: "none",
             borderRadius: "6px",
@@ -192,10 +217,12 @@ export default function MaterialForm({
           onClick={onCancel}
           style={{
             flex: 1,
-            background: "#ccc",
+            background: BUTTON_COLOR,
+            color: "white",
             border: "none",
             borderRadius: "6px",
             padding: "0.6rem",
+            fontWeight: 600,
           }}
         >
           Abbrechen

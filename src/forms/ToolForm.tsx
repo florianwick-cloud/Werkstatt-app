@@ -14,8 +14,8 @@ type Props = {
   initialTool?: Tool;
   shelves: Shelf[];
   boxes: Box[];
-  defaultShelfId?: string | null;   // NEU
-  defaultBoxId?: string | null;     // NEU
+  defaultShelfId?: string | null;
+  defaultBoxId?: string | null;
   onSave: (tool: ToolInput) => void;
   onCancel: () => void;
 };
@@ -29,6 +29,19 @@ export default function ToolForm({
   onSave,
   onCancel,
 }: Props) {
+
+  // 🔶 EINHEITLICHE BUTTON-FARBE
+  const BUTTON_COLOR = "#ff7a00";
+
+  // 🔶 ALPHABETISCH SORTIERTE LISTEN (A1, A2, A10 korrekt!)
+  const sortedShelves = [...shelves].sort((a, b) =>
+    a.name.localeCompare(b.name, "de", { numeric: true })
+  );
+
+  const sortedBoxes = [...boxes].sort((a, b) =>
+    a.name.localeCompare(b.name, "de", { numeric: true })
+  );
+
   const [name, setName] = useState(initialTool?.name ?? "");
   const [description, setDescription] = useState(initialTool?.description ?? "");
 
@@ -51,7 +64,7 @@ export default function ToolForm({
     initialTool?.boxId ?? defaultBoxId ?? null
   );
 
-  // Bild initialisieren (nur imageBase64)
+  // Bild initialisieren
   const initialImage = initialTool?.imageBase64 ?? null;
 
   const [imageUrl, setImageUrl] = useState<string | null>(initialImage);
@@ -107,14 +120,14 @@ export default function ToolForm({
     });
   }
 
-  const shelfBoxes = boxes.filter((b) => b.shelfId === selectedShelfId);
+  const shelfBoxes = sortedBoxes.filter((b) => b.shelfId === selectedShelfId);
 
   // Wenn nur 1 Regal existiert → automatisch auswählen
   useEffect(() => {
-    if (!selectedShelfId && shelves.length === 1) {
-      setSelectedShelfId(shelves[0].id);
+    if (!selectedShelfId && sortedShelves.length === 1) {
+      setSelectedShelfId(sortedShelves[0].id);
     }
-  }, [shelves, selectedShelfId]);
+  }, [sortedShelves, selectedShelfId]);
 
   // Box-Logik
   useEffect(() => {
@@ -145,7 +158,7 @@ export default function ToolForm({
 
   return (
     <div style={{ padding: "1rem", background: "#fff", borderRadius: "8px", border: "1px solid #ddd" }}>
-      <h3 style={{ color: "#ff7a00", marginBottom: "0.75rem" }}>
+      <h3 style={{ color: BUTTON_COLOR, marginBottom: "0.75rem" }}>
         {initialTool ? "Werkzeug bearbeiten" : "Werkzeug hinzufügen"}
       </h3>
 
@@ -157,7 +170,7 @@ export default function ToolForm({
           style={{
             flex: 1,
             padding: "0.6rem",
-            background: location === "shelf" ? "#ff7a00" : "#eee",
+            background: location === "shelf" ? BUTTON_COLOR : "#eee",
             color: location === "shelf" ? "white" : "#333",
             border: "1px solid #ccc",
             borderRadius: "6px 0 0 6px",
@@ -173,7 +186,7 @@ export default function ToolForm({
           style={{
             flex: 1,
             padding: "0.6rem",
-            background: location === "box" ? "#ff7a00" : "#eee",
+            background: location === "box" ? BUTTON_COLOR : "#eee",
             color: location === "box" ? "white" : "#333",
             border: "1px solid #ccc",
             borderRadius: "0 6px 6px 0",
@@ -191,7 +204,7 @@ export default function ToolForm({
         style={{ width: "100%", padding: "0.5rem", marginBottom: "0.75rem" }}
       >
         <option value="">Regal wählen…</option>
-        {shelves.map((s) => (
+        {sortedShelves.map((s) => (
           <option key={s.id} value={s.id}>
             {s.name}
           </option>
@@ -278,7 +291,7 @@ export default function ToolForm({
           onClick={handleSubmit}
           style={{
             flex: 1,
-            background: "#ff7a00",
+            background: BUTTON_COLOR,
             color: "white",
             border: "none",
             borderRadius: "6px",
@@ -293,7 +306,7 @@ export default function ToolForm({
           onClick={onCancel}
           style={{
             flex: 1,
-            background: "#ff7a00",
+            background: BUTTON_COLOR,
             color: "white",
             border: "none",
             borderRadius: "6px",

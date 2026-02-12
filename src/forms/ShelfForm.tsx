@@ -10,6 +10,8 @@ type Props = {
 export default function ShelfForm({ initialShelf, onSave, onCancel }: Props) {
   const [name, setName] = useState(initialShelf?.name ?? "");
 
+  const BUTTON_COLOR = "#ff7a00";
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
@@ -27,7 +29,10 @@ export default function ShelfForm({ initialShelf, onSave, onCancel }: Props) {
         onSubmit={handleSubmit}
         className="bg-white p-4 rounded-lg w-full max-w-sm"
       >
-        <h3 className="text-lg font-semibold mb-3">
+        <h3
+          className="text-lg font-semibold mb-3"
+          style={{ color: BUTTON_COLOR }}
+        >
           {initialShelf ? "Regal bearbeiten" : "Neues Regal"}
         </h3>
 
@@ -41,7 +46,8 @@ export default function ShelfForm({ initialShelf, onSave, onCancel }: Props) {
 
         <button
           type="submit"
-          className="w-full bg-orange-600 text-white p-2 rounded mb-2"
+          className="w-full text-white p-2 rounded mb-2 font-semibold"
+          style={{ background: BUTTON_COLOR }}
         >
           {initialShelf ? "Speichern" : "Hinzufügen"}
         </button>
@@ -49,7 +55,8 @@ export default function ShelfForm({ initialShelf, onSave, onCancel }: Props) {
         <button
           type="button"
           onClick={onCancel}
-          className="w-full bg-gray-400 text-white p-2 rounded"
+          className="w-full text-white p-2 rounded font-semibold"
+          style={{ background: BUTTON_COLOR }}
         >
           Abbrechen
         </button>

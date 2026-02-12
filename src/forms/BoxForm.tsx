@@ -4,13 +4,34 @@ import type { Box, Shelf } from "../types/models";
 type Props = {
   shelves: Shelf[];
   initialBox?: Box;
+
+  defaultShelfId?: string | null;
+
   onSave: (box: Box) => void;
   onCancel: () => void;
 };
 
-export default function BoxForm({ shelves, initialBox, onSave, onCancel }: Props) {
+export default function BoxForm({
+  shelves,
+  initialBox,
+  defaultShelfId,
+  onSave,
+  onCancel,
+}: Props) {
+
+  // Einheitliche Button-Farbe
+  const BUTTON_COLOR = "#ff7a00";
+
+  // Alphabetische Sortierung (A1 < A10)
+  const sortedShelves = [...shelves].sort((a, b) =>
+    a.name.localeCompare(b.name, "de", { numeric: true })
+  );
+
+  // Default-Regal wie in ToolForm/MaterialForm
   const [name, setName] = useState(initialBox?.name ?? "");
-  const [shelfId, setShelfId] = useState(initialBox?.shelfId ?? shelves[0]?.id);
+  const [shelfId, setShelfId] = useState(
+    initialBox?.shelfId ?? defaultShelfId ?? sortedShelves[0]?.id
+  );
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -46,7 +67,9 @@ export default function BoxForm({ shelves, initialBox, onSave, onCancel }: Props
           maxWidth: "400px",
         }}
       >
-        <h3>{initialBox ? "Kiste bearbeiten" : "Neue Kiste"}</h3>
+        <h3 style={{ color: BUTTON_COLOR }}>
+          {initialBox ? "Kiste bearbeiten" : "Neue Kiste"}
+        </h3>
 
         <label>Name der Kiste</label>
         <input
@@ -75,7 +98,7 @@ export default function BoxForm({ shelves, initialBox, onSave, onCancel }: Props
             border: "1px solid #ccc",
           }}
         >
-          {shelves.map((shelf) => (
+          {sortedShelves.map((shelf) => (
             <option key={shelf.id} value={shelf.id}>
               {shelf.name}
             </option>
@@ -87,7 +110,7 @@ export default function BoxForm({ shelves, initialBox, onSave, onCancel }: Props
           style={{
             width: "100%",
             padding: "0.75rem",
-            background: "#1976d2",
+            background: BUTTON_COLOR,
             color: "white",
             border: "none",
             borderRadius: "6px",
@@ -105,7 +128,7 @@ export default function BoxForm({ shelves, initialBox, onSave, onCancel }: Props
           style={{
             width: "100%",
             padding: "0.75rem",
-            background: "#aaa",
+            background: BUTTON_COLOR,
             color: "white",
             border: "none",
             borderRadius: "6px",

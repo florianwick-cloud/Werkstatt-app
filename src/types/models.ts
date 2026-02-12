@@ -44,11 +44,7 @@ export type Material = {
   quantity: number;
   unit: string;
 
-  /**
-   * EINZIGES Bildfeld:
-   * Base64-String für <img src="...">
-   */
-  imageBase64: string | null;
+
 
   shelfId: string;
   boxId: string | null;
