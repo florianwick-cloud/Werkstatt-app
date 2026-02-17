@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Box, Shelf } from "../types/models";
 
 type Props = {
@@ -19,19 +19,46 @@ export default function BoxForm({
   onCancel,
 }: Props) {
 
-  // Einheitliche Button-Farbe
   const BUTTON_COLOR = "#ff7a00";
 
-  // Alphabetische Sortierung (A1 < A10)
   const sortedShelves = [...shelves].sort((a, b) =>
     a.name.localeCompare(b.name, "de", { numeric: true })
   );
 
-  // Default-Regal wie in ToolForm/MaterialForm
   const [name, setName] = useState(initialBox?.name ?? "");
-  const [shelfId, setShelfId] = useState(
-    initialBox?.shelfId ?? defaultShelfId ?? sortedShelves[0]?.id
+
+  // Paritätische Default-Logik
+  const [shelfId, setShelfId] = useState<string>(
+    initialBox?.shelfId ??
+    defaultShelfId ??
+    sortedShelves[0]?.id ??
+    ""
   );
+
+  // Wenn nur ein Regal existiert → automatisch auswählen
+  useEffect(() => {
+    if (!shelfId && sortedShelves.length === 1) {
+      setShelfId(sortedShelves[0].id);
+    }
+  }, [sortedShelves, shelfId]);
+
+  // Wenn defaultShelfId gesetzt ist → automatisch setzen
+  useEffect(() => {
+    if (!initialBox && defaultShelfId && defaultShelfId !== shelfId) {
+      const exists = sortedShelves.some(s => s.id === defaultShelfId);
+      if (exists) {
+        setShelfId(defaultShelfId);
+      }
+    }
+  }, [defaultShelfId, initialBox, shelfId, sortedShelves]);
+
+  // Wenn das aktuelle Regal nicht mehr existiert → erstes Regal wählen
+  useEffect(() => {
+    const exists = sortedShelves.some(s => s.id === shelfId);
+    if (!exists && sortedShelves.length > 0) {
+      setShelfId(sortedShelves[0].id);
+    }
+  }, [sortedShelves, shelfId]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

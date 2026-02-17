@@ -24,10 +24,8 @@ export default function MaterialForm({
   onCancel,
 }: Props) {
 
-  // Einheitliche Button-Farbe
   const BUTTON_COLOR = "#ff7a00";
 
-  // Alphabetische Sortierung (A1 < A10)
   const sortedShelves = [...shelves].sort((a, b) =>
     a.name.localeCompare(b.name, "de", { numeric: true })
   );
@@ -40,7 +38,7 @@ export default function MaterialForm({
   const [quantity, setQuantity] = useState(initialMaterial?.quantity ?? 1);
   const [unit, setUnit] = useState(initialMaterial?.unit ?? "Stk");
 
-  // LOCATION (Regal/Kiste) – identisch zu ToolForm
+  // LOCATION – paritätisch zu ToolForm
   const [location, setLocation] = useState<"shelf" | "box">(
     initialMaterial?.boxId
       ? "box"
@@ -49,18 +47,27 @@ export default function MaterialForm({
       : "shelf"
   );
 
-  // REGAL – identisch zu ToolForm
+  // REGAL – paritätisch
   const [selectedShelfId, setSelectedShelfId] = useState<string>(
     initialMaterial?.shelfId ?? defaultShelfId ?? ""
   );
 
-  // KISTE – identisch zu ToolForm
+  // KISTE – paritätisch
   const [selectedBoxId, setSelectedBoxId] = useState<string | null>(
     initialMaterial?.boxId ?? defaultBoxId ?? null
   );
 
-  // Kisten des gewählten Regals
   const shelfBoxes = sortedBoxes.filter((b) => b.shelfId === selectedShelfId);
+
+  // --- Parität: Wenn defaultBoxId gesetzt ist → Regal automatisch setzen ---
+  useEffect(() => {
+    if (!initialMaterial && defaultBoxId) {
+      const box = boxes.find((b) => b.id === defaultBoxId);
+      if (box && box.shelfId !== selectedShelfId) {
+        setSelectedShelfId(box.shelfId);
+      }
+    }
+  }, [defaultBoxId, boxes, initialMaterial, selectedShelfId]);
 
   // Wenn nur ein Regal existiert → automatisch auswählen
   useEffect(() => {
@@ -69,7 +76,7 @@ export default function MaterialForm({
     }
   }, [sortedShelves, selectedShelfId]);
 
-  // Box-Logik – identisch zu ToolForm
+  // --- Parität: Box-Logik identisch zu ToolForm ---
   useEffect(() => {
     if (location === "shelf") {
       setSelectedBoxId(null);
@@ -79,6 +86,16 @@ export default function MaterialForm({
       setSelectedBoxId(shelfBoxes[0].id);
     }
   }, [location, selectedShelfId, shelfBoxes]);
+
+  // --- Parität: Location korrigieren, wenn Box gesetzt ist ---
+  useEffect(() => {
+    if (selectedBoxId && location !== "box") {
+      setLocation("box");
+    }
+    if (!selectedBoxId && location !== "shelf") {
+      setLocation("shelf");
+    }
+  }, [selectedBoxId, location]);
 
   function handleSubmit() {
     if (!name.trim()) return;
